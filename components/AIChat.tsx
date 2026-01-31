@@ -1,8 +1,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, Send, X, Bot, User, Loader2, Terminal, Zap, Activity, Cpu } from 'lucide-react';
-import { ChatMessage } from '../types';
-import { generateChatResponse } from '../services/geminiService';
+import { ChatMessage } from '../types.ts';
+import { generateChatResponse } from '../services/geminiService.ts';
 
 const AIChat: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,7 +14,7 @@ const AIChat: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const el = scrollRef.current as any;
+    const el = scrollRef.current;
     if (el) {
       el.scrollTop = el.scrollHeight;
     }
@@ -45,7 +45,6 @@ const AIChat: React.FC = () => {
 
   return (
     <div className="fixed bottom-10 right-10 z-[110]">
-      {/* Trigger Button */}
       {!isOpen && (
         <button 
           onClick={() => setIsOpen(true)}
@@ -59,10 +58,8 @@ const AIChat: React.FC = () => {
         </button>
       )}
 
-      {/* Futuristic Chat Window */}
       {isOpen && (
         <div className="glass-card rounded-[2.5rem] w-[90vw] sm:w-[450px] h-[650px] flex flex-col border border-white/10 overflow-hidden animate-in slide-in-from-bottom-10 duration-500 shadow-[0_0_100px_rgba(0,0,0,0.5)]">
-          {/* Holographic Header */}
           <div className="p-8 border-b border-white/5 bg-white/5 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="relative">
@@ -85,18 +82,10 @@ const AIChat: React.FC = () => {
             </div>
           </div>
 
-          {/* Messages Node */}
           <div 
             ref={scrollRef} 
             className="flex-1 overflow-y-auto p-8 space-y-8 bg-black/40 custom-scrollbar relative"
           >
-            {/* Background Tech Detail */}
-            <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-[0.03] select-none flex flex-wrap gap-4 p-4 font-mono text-[8px] overflow-hidden">
-               {Array.from({length: 20}).map((_, i) => (
-                 <span key={i}>0XF{Math.random().toString(16).slice(2, 8)} ACCESSING_SECURE_NODE_HUB...</span>
-               ))}
-            </div>
-
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-4 duration-300`}>
                 <div className={`max-w-[85%] p-5 rounded-2xl flex flex-col gap-3 ${
@@ -117,28 +106,22 @@ const AIChat: React.FC = () => {
             {isLoading && (
               <div className="flex justify-start">
                 <div className="bg-white/5 border border-white/10 p-5 rounded-2xl flex items-center gap-4 animate-pulse">
-                  <div className="relative">
-                    <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
-                    <div className="absolute inset-0 bg-blue-500 blur-md opacity-20" />
-                  </div>
-                  <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Processing_Logic...</span>
+                  <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
+                  <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Processing...</span>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Input Terminal */}
           <div className="p-8 border-t border-white/5 bg-black/60 relative">
-            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
             <div className="flex gap-4 relative">
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500 opacity-50">
                 <Terminal className="w-4 h-4" />
               </div>
-              {/* Fix: Cast e.target to any to avoid property 'value' error on HTMLInputElement */}
               <input 
                 type="text" 
                 value={input}
-                onChange={(e) => setInput((e.target as any).value)}
+                onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="INPUT COMMAND..."
                 className="flex-1 bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-4 text-xs font-mono tracking-widest text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-700"
@@ -146,7 +129,7 @@ const AIChat: React.FC = () => {
               <button 
                 onClick={handleSend}
                 disabled={isLoading}
-                className="bg-white text-black p-4 rounded-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-30 shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                className="bg-white text-black p-4 rounded-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-30"
               >
                 <Zap className="w-5 h-5" />
               </button>

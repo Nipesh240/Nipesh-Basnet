@@ -34,12 +34,12 @@ import {
   LogOut,
   ShieldAlert
 } from 'lucide-react';
-import { SERVICES, GOV_FORMS, getIcon, Logo } from './constants';
-import AIChat from './components/AIChat';
-import FormAssistant from './components/FormAssistant';
-import WifiTopupAssistant from './components/WifiTopupAssistant';
-import GameTopupAssistant from './components/GameTopupAssistant';
-import AdminLogin from './components/AdminLogin';
+import { SERVICES, GOV_FORMS, getIcon, Logo } from './constants.tsx';
+import AIChat from './components/AIChat.tsx';
+import FormAssistant from './components/FormAssistant.tsx';
+import WifiTopupAssistant from './components/WifiTopupAssistant.tsx';
+import GameTopupAssistant from './components/GameTopupAssistant.tsx';
+import AdminLogin from './components/AdminLogin.tsx';
 
 const HUDOverlay = () => (
   <div className="fixed inset-0 pointer-events-none z-[100] border-[20px] border-transparent">
@@ -175,9 +175,9 @@ const App: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled((window as any).scrollY > 20);
-    (window as any).addEventListener('scroll', handleScroll);
-    return () => (window as any).removeEventListener('scroll', handleScroll);
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleServiceAction = (serviceId: string) => {
@@ -205,7 +205,7 @@ const App: React.FC = () => {
       {/* Navigation: The Floating Node */}
       <nav className={`fixed w-full z-[110] transition-all duration-700 ${scrolled ? 'top-4 px-4' : 'top-0'}`}>
         <div className={`max-w-7xl mx-auto px-6 sm:px-10 flex items-center justify-between transition-all duration-500 ${scrolled ? 'glass-card py-4 rounded-[2rem] border-white/20' : 'bg-transparent py-8 border-transparent'}`}>
-          <div className="flex items-center gap-3 md:gap-4 cursor-pointer group shrink-0" onClick={() => (window as any).scrollTo({top: 0, behavior: 'smooth'})}>
+          <div className="flex items-center gap-3 md:gap-4 cursor-pointer group shrink-0" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
             <div className="relative shrink-0">
               <Logo className="w-10 h-10 md:w-12 md:h-12 text-blue-500 group-hover:scale-110 transition-transform duration-500" />
               <div className="absolute inset-0 bg-blue-500 blur-2xl opacity-0 group-hover:opacity-40 transition-opacity" />
