@@ -7,7 +7,6 @@ export const generateChatResponse = async (history: {role: string, parts: {text:
     
     const chat = ai.chats.create({
       model: 'gemini-3-pro-preview',
-      history: history,
       config: {
         systemInstruction: `You are the Lead Domestic IT Strategist for Sajilo Project Hub. 
         Sajilo Project Hub is the premier IT firm specializing in projects exclusively within Nepal.
@@ -25,6 +24,7 @@ export const generateChatResponse = async (history: {role: string, parts: {text:
         2. "Localized Support"
         3. "Ease of Use (Sajilo)"`,
       },
+      history: history,
     });
 
     const response = await chat.sendMessage({ message: userMessage });
