@@ -27,7 +27,7 @@ import {
   Sword,
   Target
 } from 'lucide-react';
-import { Service, Testimonial } from './types';
+import { Service, Testimonial } from './types.ts';
 
 export const Logo = ({ className = "w-8 h-8" }: { className?: string }) => (
   <svg 

@@ -15,7 +15,7 @@ import {
   Mail,
   Zap
 } from 'lucide-react';
-import { GAME_LIST, getIcon } from '../constants';
+import { GAME_LIST, getIcon } from '../constants.tsx';
 
 interface GameTopupAssistantProps {
   onClose: () => void;
@@ -44,7 +44,6 @@ const GameTopupAssistant: React.FC<GameTopupAssistantProps> = ({ onClose }) => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null);
-    // Fix: Cast e.target to any to access 'files' property of the input element
     const file = (e.target as any).files?.[0];
     if (file) {
       if (!['image/jpeg', 'image/png'].includes(file.type)) {
@@ -97,7 +96,6 @@ const GameTopupAssistant: React.FC<GameTopupAssistantProps> = ({ onClose }) => {
       <div className="absolute inset-0 bg-[#0a0f1d]/90 backdrop-blur-md" onClick={onClose} />
       
       <div className="relative w-full max-w-2xl bg-[#111827] border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-        {/* Header */}
         <div className="p-6 border-b border-white/5 bg-white/5 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-purple-600 flex items-center justify-center text-white shadow-lg shadow-purple-500/20">
@@ -160,7 +158,6 @@ const GameTopupAssistant: React.FC<GameTopupAssistantProps> = ({ onClose }) => {
                   {selectedGame.requirements.map(req => (
                     <div key={req}>
                       <label className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2 block">{req}</label>
-                      {/* Fix: Cast e.target to any to access 'value' property of input */}
                       <input 
                         type="text" 
                         value={formData[req] || ''}
@@ -173,7 +170,6 @@ const GameTopupAssistant: React.FC<GameTopupAssistantProps> = ({ onClose }) => {
                 </div>
               </div>
 
-              {/* Payment Verification Step */}
               <div className={`space-y-6 transition-all duration-500 ${!isFormComplete ? 'opacity-30 grayscale pointer-events-none' : ''}`}>
                  <div className="flex justify-between items-center">
                     <h4 className="text-sm font-bold text-purple-400 uppercase tracking-widest flex items-center gap-2">
@@ -202,7 +198,6 @@ const GameTopupAssistant: React.FC<GameTopupAssistantProps> = ({ onClose }) => {
                     </div>
                  </div>
 
-                 {/* Upload Voucher Slot */}
                  <div className={`p-6 rounded-3xl border transition-all ${voucher ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-white/5 border-white/10'}`}>
                     <div className="flex items-center justify-between gap-4">
                        <div className="flex items-center gap-4">
@@ -219,7 +214,6 @@ const GameTopupAssistant: React.FC<GameTopupAssistantProps> = ({ onClose }) => {
                        <button 
                          onClick={() => {
                            if (voucher) setVoucher(null);
-                           // Explicit cast to any to call click() safely
                            else (fileInputRef.current as any)?.click();
                          }}
                          className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold transition-all shadow-lg active:scale-95 ${
@@ -237,7 +231,6 @@ const GameTopupAssistant: React.FC<GameTopupAssistantProps> = ({ onClose }) => {
           )}
         </div>
 
-        {/* Footer */}
         <div className="p-8 bg-white/5 border-t border-white/5">
            <div className="flex items-center justify-center gap-2.5 text-[10px] text-slate-500 uppercase font-bold tracking-widest text-center mb-6">
             <Mail className="w-3.5 h-3.5" /> Dispatched to: {RECIPIENT_EMAIL}
@@ -255,7 +248,6 @@ const GameTopupAssistant: React.FC<GameTopupAssistantProps> = ({ onClose }) => {
           </button>
         </div>
 
-        {/* Hidden Input */}
         <input 
           type="file" 
           ref={fileInputRef}

@@ -17,7 +17,7 @@ import {
   FileText,
   Mail
 } from 'lucide-react';
-import { WIFI_ISPS, getIcon } from '../constants';
+import { WIFI_ISPS, getIcon } from '../constants.tsx';
 
 interface WifiTopupAssistantProps {
   onClose: () => void;
@@ -46,7 +46,6 @@ const WifiTopupAssistant: React.FC<WifiTopupAssistantProps> = ({ onClose }) => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null);
-    // Fix: Cast e.target to any to access 'files' property of the input element
     const file = (e.target as any).files?.[0];
     if (file) {
       if (!['image/jpeg', 'image/png'].includes(file.type)) {
@@ -99,7 +98,6 @@ const WifiTopupAssistant: React.FC<WifiTopupAssistantProps> = ({ onClose }) => {
       <div className="absolute inset-0 bg-[#0a0f1d]/90 backdrop-blur-md" onClick={onClose} />
       
       <div className="relative w-full max-w-2xl bg-[#111827] border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-        {/* Header */}
         <div className="p-6 border-b border-white/5 bg-white/5 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
@@ -142,7 +140,6 @@ const WifiTopupAssistant: React.FC<WifiTopupAssistantProps> = ({ onClose }) => {
             </div>
           ) : (
             <div className="space-y-8 animate-in slide-in-from-right-4 duration-300">
-              {/* Form Section */}
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                    <button onClick={() => setSelectedISP(null)} className="text-[10px] font-bold text-slate-500 uppercase hover:text-white transition-colors">← Back to ISPs</button>
@@ -163,7 +160,6 @@ const WifiTopupAssistant: React.FC<WifiTopupAssistantProps> = ({ onClose }) => {
                   {selectedISP.requirements.map(req => (
                     <div key={req}>
                       <label className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2 block">{req}</label>
-                      {/* Fix: Cast e.target to any to access 'value' property of input */}
                       <input 
                         type="text" 
                         value={formData[req] || ''}
@@ -176,7 +172,6 @@ const WifiTopupAssistant: React.FC<WifiTopupAssistantProps> = ({ onClose }) => {
                 </div>
               </div>
 
-              {/* Payment Section (Step 2) */}
               <div className={`space-y-6 transition-all duration-500 ${!isFormComplete ? 'opacity-30 grayscale pointer-events-none' : ''}`}>
                  <div className="flex justify-between items-center">
                     <h4 className="text-sm font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2">
@@ -205,7 +200,6 @@ const WifiTopupAssistant: React.FC<WifiTopupAssistantProps> = ({ onClose }) => {
                     </div>
                  </div>
 
-                 {/* Voucher Upload */}
                  <div className={`p-6 rounded-3xl border transition-all ${voucher ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-white/5 border-white/10'}`}>
                     <div className="flex items-center justify-between gap-4">
                        <div className="flex items-center gap-4">
@@ -222,7 +216,6 @@ const WifiTopupAssistant: React.FC<WifiTopupAssistantProps> = ({ onClose }) => {
                        <button 
                          onClick={() => {
                            if (voucher) setVoucher(null);
-                           // Explicit cast to any to call click() safely
                            else (fileInputRef.current as any)?.click();
                          }}
                          className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold transition-all shadow-lg active:scale-95 ${
@@ -240,7 +233,6 @@ const WifiTopupAssistant: React.FC<WifiTopupAssistantProps> = ({ onClose }) => {
           )}
         </div>
 
-        {/* Footer */}
         <div className="p-8 bg-white/5 border-t border-white/5">
            <div className="flex items-center justify-center gap-2.5 text-[10px] text-slate-500 uppercase font-bold tracking-widest text-center mb-6">
             <Mail className="w-3.5 h-3.5" /> Securely attaching to: {RECIPIENT_EMAIL}
@@ -258,7 +250,6 @@ const WifiTopupAssistant: React.FC<WifiTopupAssistantProps> = ({ onClose }) => {
           </button>
         </div>
 
-        {/* Hidden Input */}
         <input 
           type="file" 
           ref={fileInputRef}
