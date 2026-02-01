@@ -1,45 +1,22 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  ArrowRight, 
-  CheckCircle2, 
   ArrowUpRight,
-  ShieldCheck,
   ChevronRight,
-  Workflow,
-  MapPin,
-  Flag,
-  FileSearch,
-  Check,
-  Wifi,
-  Gamepad2,
-  Mail,
-  Loader2,
-  X,
-  MessageSquare,
   Globe,
-  Terminal,
   Activity,
-  Cpu,
-  Database,
-  Layers,
-  Search,
-  Zap,
-  Lock,
   Box,
-  User,
-  ExternalLink,
+  Terminal,
+  X,
+  CheckCircle2,
+  Loader2,
   Code,
-  LogIn,
-  LogOut,
-  ShieldAlert
+  Layers
 } from 'lucide-react';
 import { SERVICES, GOV_FORMS, getIcon, Logo } from './constants.tsx';
-import AIChat from './components/AIChat.tsx';
 import FormAssistant from './components/FormAssistant.tsx';
 import WifiTopupAssistant from './components/WifiTopupAssistant.tsx';
 import GameTopupAssistant from './components/GameTopupAssistant.tsx';
-import AdminLogin from './components/AdminLogin.tsx';
 
 const HUDOverlay = () => (
   <div className="fixed inset-0 pointer-events-none z-[100] border-[20px] border-transparent">
@@ -63,7 +40,7 @@ const FloatingDataPoint = ({ delay, top, left, label, value }: { delay: number, 
   </div>
 );
 
-const SystemStatus = ({ isAdmin }: { isAdmin: boolean }) => (
+const SystemStatus = () => (
   <div className="fixed top-28 left-10 z-[40] hidden xl:flex flex-col gap-5">
     <div className="glass-card rounded-2xl p-4 flex items-center gap-4 border-l-4 border-l-emerald-500 group transition-all hover:bg-white/5">
       <div className="relative">
@@ -75,18 +52,6 @@ const SystemStatus = ({ isAdmin }: { isAdmin: boolean }) => (
         <span className="text-[11px] font-bold text-white tracking-widest">LIVE_NODE_UP</span>
       </div>
     </div>
-    {isAdmin && (
-      <div className="glass-card rounded-2xl p-4 flex items-center gap-4 border-l-4 border-l-blue-500 group transition-all hover:bg-blue-500/10 scale-105 shadow-[0_0_30px_rgba(59,130,246,0.2)]">
-        <div className="relative">
-          <ShieldCheck className="w-5 h-5 text-blue-500" />
-          <div className="absolute inset-0 bg-blue-500 blur-lg opacity-40" />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-[8px] font-black uppercase text-blue-400 tracking-[0.2em]">Admin Active</span>
-          <span className="text-[11px] font-bold text-white tracking-widest">SECURE_SHELL</span>
-        </div>
-      </div>
-    )}
   </div>
 );
 
@@ -166,8 +131,6 @@ const ConsultationModal = ({ onClose }: { onClose: () => void }) => {
 };
 
 const App: React.FC = () => {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [selectedForm, setSelectedForm] = useState<typeof GOV_FORMS[0] | null>(null);
   const [isWifiModalOpen, setIsWifiModalOpen] = useState(false);
   const [isGameModalOpen, setIsGameModalOpen] = useState(false);
@@ -186,15 +149,10 @@ const App: React.FC = () => {
     else setIsConsultOpen(true);
   };
 
-  const handleLogout = () => {
-    setIsAdmin(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   return (
     <div className="min-h-screen bg-[#03040a] text-white font-sans selection:bg-blue-500/40 overflow-x-hidden animate-in fade-in duration-1000">
       <HUDOverlay />
-      <SystemStatus isAdmin={isAdmin} />
+      <SystemStatus />
       
       {/* Cinematic Backgrounds */}
       <div className="fixed inset-0 grid-bg pointer-events-none z-0" />
@@ -217,7 +175,7 @@ const App: React.FC = () => {
               <div className="flex items-center gap-2 mt-0.5">
                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                  <span className="text-[8px] md:text-[9px] text-emerald-500 font-black uppercase tracking-[0.3em] opacity-80">
-                   {isAdmin ? 'Admin_Session_V4' : 'Public_Gateway_Active'}
+                   Public_Gateway_Active
                  </span>
               </div>
             </div>
@@ -232,24 +190,6 @@ const App: React.FC = () => {
             ))}
             
             <div className="flex items-center gap-3">
-              {isAdmin ? (
-                <button 
-                  onClick={handleLogout}
-                  className="group relative flex items-center gap-2 px-6 py-3.5 rounded-2xl text-[10px] xl:text-[11px] font-black uppercase tracking-[0.3em] transition-all text-red-500/80 hover:text-red-500 border border-red-500/10 hover:border-red-500/30 hover:bg-red-500/5 whitespace-nowrap"
-                >
-                  <LogOut className="w-4 h-4" />
-                  LOCK TERMINAL
-                </button>
-              ) : (
-                <button 
-                  onClick={() => setIsAdminModalOpen(true)}
-                  className="group relative flex items-center gap-2 px-6 py-3.5 rounded-2xl text-[10px] xl:text-[11px] font-black uppercase tracking-[0.3em] transition-all text-blue-500/80 hover:text-blue-400 border border-blue-500/10 hover:border-blue-500/30 hover:bg-blue-500/5 whitespace-nowrap"
-                >
-                  <ShieldAlert className="w-4 h-4" />
-                  ADMIN ACCESS
-                </button>
-              )}
-
               <button 
                 onClick={() => setIsConsultOpen(true)}
                 className="relative group overflow-hidden bg-white text-black px-6 xl:px-8 py-3.5 rounded-2xl text-[10px] xl:text-[11px] font-black uppercase tracking-[0.3em] transition-all hover:pr-12 shadow-[0_0_20px_rgba(255,255,255,0.15)] shrink-0"
@@ -261,12 +201,6 @@ const App: React.FC = () => {
           </div>
 
           <div className="lg:hidden flex items-center gap-3">
-            <button 
-              onClick={() => isAdmin ? handleLogout() : setIsAdminModalOpen(true)}
-              className={`p-2 glass-card rounded-xl ${isAdmin ? 'text-red-500/70' : 'text-blue-500/70'}`}
-            >
-              {isAdmin ? <LogOut className="w-5 h-5" /> : <ShieldAlert className="w-5 h-5" />}
-            </button>
             <div className="p-2 glass-card rounded-xl">
               <Layers className="w-5 h-5 text-slate-400" />
             </div>
@@ -281,11 +215,7 @@ const App: React.FC = () => {
         
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="inline-flex items-center gap-4 bg-white/5 border border-white/10 px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.5em] mb-16 animate-in fade-in slide-in-from-top-12 duration-1000">
-             {isAdmin ? (
-               <><ShieldCheck className="w-4 h-4 text-emerald-500" /> Admin Node Synchronized</>
-             ) : (
-               <><Globe className="w-4 h-4 text-blue-500" /> Domestic Hub Gateway</>
-             )}
+             <Globe className="w-4 h-4 text-blue-500" /> Domestic Hub Gateway
           </div>
           
           <h1 className="font-heading text-6xl sm:text-7xl md:text-8xl lg:text-[11rem] font-black tracking-tighter mb-14 leading-[0.85] glow-text animate-in fade-in slide-in-from-bottom-12 duration-1000">
@@ -319,7 +249,7 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           <div className="mb-32">
             <span className="text-[11px] font-black text-blue-500 uppercase tracking-[0.5em] mb-6 block">Section_01</span>
-            <h2 className="font-heading text-5xl md:text-9xl font-black tracking-tighter uppercase">ADMIN <br /> MATRIX.</h2>
+            <h2 className="font-heading text-5xl md:text-9xl font-black tracking-tighter uppercase">PORTAL <br /> ACCESS.</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
             {GOV_FORMS.map((form) => (
@@ -380,18 +310,6 @@ const App: React.FC = () => {
           </div>
         </div>
       </footer>
-
-      <AIChat />
-      
-      {isAdminModalOpen && (
-        <AdminLogin 
-          onBack={() => setIsAdminModalOpen(false)} 
-          onLogin={(success) => {
-            setIsAdmin(success);
-            setIsAdminModalOpen(false);
-          }} 
-        />
-      )}
 
       {selectedForm && (
         <FormAssistant form={selectedForm} onClose={() => setSelectedForm(null)} />

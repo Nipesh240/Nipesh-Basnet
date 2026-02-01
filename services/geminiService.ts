@@ -3,7 +3,7 @@ import { GoogleGenAI } from "@google/genai";
 
 export const generateChatResponse = async (history: {role: string, parts: {text: string}[]}[], userMessage: string): Promise<string> => {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
     
     const chat = ai.chats.create({
       model: 'gemini-3-pro-preview',

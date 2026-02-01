@@ -1,8 +1,5 @@
 {
   "name": "Sajilo Project Hub - National Digital Node",
-  "description": "A high-performance, modern business portal featuring a smart AI concierge powered by Gemini, responsive design, and cutting-edge visual aesthetics.",
-  "requestFramePermissions": [
-    "microphone",
-    "camera"
-  ]
+  "description": "A high-performance, modern business portal featuring responsive design, cutting-edge visual aesthetics, and localized digital services.",
+  "requestFramePermissions": []
 }
