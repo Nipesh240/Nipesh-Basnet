@@ -19,3 +19,12 @@ export interface Testimonial {
   text: string;
   avatar: string;
 }
+
+export interface UserActivity {
+  id: string;
+  type: 'gov_form' | 'wifi' | 'game' | 'uni_project';
+  title: string;
+  timestamp: string;
+  status: 'pending' | 'completed' | 'dispatched';
+  details: string;
+}

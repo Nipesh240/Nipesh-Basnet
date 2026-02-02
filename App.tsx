@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Home,
   LayoutGrid,
   Zap,
   Bot,
-  User,
+  User as UserIcon,
   Activity,
   Box,
   Terminal,
@@ -22,7 +22,14 @@ import {
   Bell,
   LogOut,
   UserPlus,
-  AlertCircle
+  AlertCircle,
+  Clock,
+  ExternalLink,
+  History,
+  FileText,
+  Wifi,
+  Gamepad2,
+  GraduationCap
 } from 'lucide-react';
 import { SERVICES, GOV_FORMS, getIcon, Logo } from './constants.tsx';
 import FormAssistant from './components/FormAssistant.tsx';
@@ -33,6 +40,8 @@ import AIChat from './components/AIChat.tsx';
 import AdminLogin from './components/AdminLogin.tsx';
 import AdminDashboard from './components/AdminDashboard.tsx';
 import PublicAuth from './components/PublicAuth.tsx';
+import StartupGate from './components/StartupGate.tsx';
+import { UserActivity } from './types.ts';
 
 type TabType = 'home' | 'services' | 'portals' | 'ai' | 'account';
 
@@ -49,9 +58,19 @@ const App: React.FC = () => {
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
   const [isAdminDashboardOpen, setIsAdminDashboardOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Admin login
+  
+  const [isAppUnlocked, setIsAppUnlocked] = useState(() => {
+    return localStorage.getItem('sjl_app_unlocked') === 'true';
+  });
+
   const [publicUser, setPublicUser] = useState<any>(() => {
     const saved = localStorage.getItem('sjl_public_user');
     return saved ? JSON.parse(saved) : null;
+  });
+
+  const [activities, setActivities] = useState<UserActivity[]>(() => {
+    const saved = localStorage.getItem('sjl_user_activities');
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [systemConfig, setSystemConfig] = useState(() => {
@@ -78,6 +97,19 @@ const App: React.FC = () => {
     };
   }, []);
 
+  const addActivity = useCallback((activity: Omit<UserActivity, 'id' | 'timestamp'>) => {
+    const newActivity: UserActivity = {
+      ...activity,
+      id: `ACT-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+      timestamp: new Date().toISOString(),
+    };
+    setActivities(prev => {
+      const updated = [newActivity, ...prev].slice(0, 50); // Keep last 50
+      localStorage.setItem('sjl_user_activities', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
   const handleServiceAction = (serviceId: string) => {
     if (serviceId === 'wifi-topup' && systemConfig.wifiTopup) setIsWifiModalOpen(true);
     else if (serviceId === 'game-topup' && systemConfig.gameTopup) setIsGameModalOpen(true);
@@ -92,7 +124,21 @@ const App: React.FC = () => {
 
   const logoutPublic = () => {
     localStorage.removeItem('sjl_public_user');
+    localStorage.removeItem('sjl_app_unlocked');
+    localStorage.removeItem('sjl_user_activities');
     setPublicUser(null);
+    setActivities([]);
+    setIsAppUnlocked(false);
+  };
+
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case 'gov_form': return <FileText className="w-4 h-4" />;
+      case 'wifi': return <Wifi className="w-4 h-4" />;
+      case 'game': return <Gamepad2 className="w-4 h-4" />;
+      case 'uni_project': return <GraduationCap className="w-4 h-4" />;
+      default: return <Activity className="w-4 h-4" />;
+    }
   };
 
   if (!isOnline) {
@@ -105,6 +151,20 @@ const App: React.FC = () => {
           <div className="w-12 h-1 bg-amber-500/20 rounded-full mx-auto animate-pulse" />
         </div>
       </div>
+    );
+  }
+
+  // Pre-App Login Gate
+  if (!isAppUnlocked) {
+    return (
+      <StartupGate 
+        onUnlock={(userData) => {
+          setPublicUser(userData);
+          localStorage.setItem('sjl_public_user', JSON.stringify(userData));
+          localStorage.setItem('sjl_app_unlocked', 'true');
+          setIsAppUnlocked(true);
+        }} 
+      />
     );
   }
 
@@ -154,14 +214,6 @@ const App: React.FC = () => {
                   >
                     Launch
                   </button>
-                  {!publicUser && (
-                    <button 
-                      onClick={() => setIsPublicAuthOpen(true)}
-                      className="bg-black/30 backdrop-blur-md text-white border border-white/20 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-transform"
-                    >
-                      Join Portal
-                    </button>
-                  )}
                 </div>
               </div>
               <Activity className="absolute bottom-[-20px] right-[-20px] w-48 h-48 text-white/5 rotate-12" />
@@ -220,11 +272,6 @@ const App: React.FC = () => {
                 <h2 className="text-2xl font-black uppercase tracking-tighter text-white">Capabilities</h2>
                 <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mt-1">Sajilo Infrastructure Hub</p>
               </div>
-              {!publicUser && (
-                <button onClick={() => setIsPublicAuthOpen(true)} className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
-                  <UserPlus className="w-5 h-5 text-blue-500" />
-                </button>
-              )}
             </div>
             <div className="grid grid-cols-1 gap-4">
                {SERVICES.filter(s => {
@@ -261,12 +308,6 @@ const App: React.FC = () => {
                 <h2 className="text-2xl font-black uppercase tracking-tighter text-white">Gov Portals</h2>
                 <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mt-1">Citizen Link Infrastructure</p>
               </div>
-              {!publicUser && (
-                <div className="p-6 bg-amber-500/5 border border-amber-500/10 rounded-3xl flex items-center gap-4">
-                   <AlertCircle className="w-6 h-6 text-amber-500" />
-                   <p className="text-[10px] font-black uppercase text-amber-500 tracking-wider leading-relaxed">Identity verification recommended for portal use. <button onClick={() => setIsPublicAuthOpen(true)} className="underline">Join Portal</button></p>
-                </div>
-              )}
               <div className="grid grid-cols-1 gap-4">
                  {GOV_FORMS.map(form => (
                    <div key={form.id} className="glass-card p-8 rounded-[2.5rem] border-white/10">
@@ -302,22 +343,22 @@ const App: React.FC = () => {
         {activeTab === 'account' && (
           <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-8">
              <div className="px-2">
-                <h2 className="text-2xl font-black uppercase tracking-tighter text-white">Node Gateway</h2>
-                <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mt-1">Identity & Access Control</p>
+                <h2 className="text-2xl font-black uppercase tracking-tighter text-white">Node Profile</h2>
+                <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mt-1">Authorized Data & Service History</p>
              </div>
 
-             {publicUser ? (
+             {publicUser && (
                <div className="space-y-6">
                   <div className="glass-card p-10 rounded-[3rem] border-white/10 flex flex-col items-center text-center gap-6">
                      <div className="w-24 h-24 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center overflow-hidden">
-                        <User className="w-12 h-12 text-blue-500" />
+                        <UserIcon className="w-12 h-12 text-blue-500" />
                      </div>
                      <div className="space-y-1">
                         <h3 className="text-xl font-black uppercase text-white tracking-tight">{publicUser.name}</h3>
                         <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">{publicUser.email}</p>
                      </div>
                      <div className="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                        <span className="text-[8px] font-black uppercase text-emerald-500 tracking-widest">Verified_Identity</span>
+                        <span className="text-[8px] font-black uppercase text-emerald-500 tracking-widest">Identity_Verified</span>
                      </div>
                      <button 
                         onClick={logoutPublic}
@@ -327,42 +368,56 @@ const App: React.FC = () => {
                      </button>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                     <div className="glass-card p-6 rounded-[2rem] border-white/10">
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Request Log</p>
-                        <p className="text-2xl font-black text-white">04</p>
-                     </div>
-                     <div className="glass-card p-6 rounded-[2rem] border-white/10">
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Trust Level</p>
-                        <p className="text-2xl font-black text-blue-500">Tier 1</p>
-                     </div>
+                  {/* Activity History - User "Work" Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between px-2">
+                       <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] flex items-center gap-2">
+                          <History className="w-3.5 h-3.5" /> Service_History
+                       </h4>
+                       <span className="text-[8px] font-black text-slate-700 uppercase tracking-widest">{activities.length} Records</span>
+                    </div>
+
+                    {activities.length === 0 ? (
+                      <div className="glass-card p-10 rounded-[2.5rem] border-white/10 flex flex-col items-center gap-4 text-center">
+                         <Clock className="w-8 h-8 text-slate-700" />
+                         <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">No active protocols detected.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {activities.map((act) => (
+                          <div key={act.id} className="glass-card p-5 rounded-3xl border-white/5 flex items-center justify-between group">
+                            <div className="flex items-center gap-4">
+                               <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                                  {getActivityIcon(act.type)}
+                               </div>
+                               <div>
+                                  <h5 className="text-[11px] font-black text-white uppercase tracking-tight">{act.title}</h5>
+                                  <p className="text-[9px] text-slate-500 font-mono mt-0.5">{act.details}</p>
+                                  <div className="flex items-center gap-2 mt-1.5">
+                                     <span className="text-[7px] text-slate-700 uppercase">{new Date(act.timestamp).toLocaleDateString()}</span>
+                                     <span className="w-1 h-1 rounded-full bg-slate-800" />
+                                     <span className={`text-[7px] font-black uppercase tracking-widest ${
+                                        act.status === 'completed' ? 'text-emerald-500' : 'text-blue-500'
+                                     }`}>{act.status}</span>
+                                  </div>
+                               </div>
+                            </div>
+                            <button className="p-2 text-slate-700 hover:text-white transition-colors">
+                               <ExternalLink className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-               </div>
-             ) : (
-               <div className="space-y-6">
-                 <div className="glass-card p-10 rounded-[3rem] border-white/10 text-center space-y-8">
-                    <div className="w-20 h-20 bg-blue-500/10 border border-blue-500/20 rounded-full flex items-center justify-center mx-auto">
-                       <UserPlus className="w-8 h-8 text-blue-500" />
-                    </div>
-                    <div className="space-y-2">
-                       <p className="text-sm font-bold text-white uppercase tracking-widest">Citizen Portal Access</p>
-                       <p className="text-[10px] text-slate-500 uppercase leading-relaxed">Register with your real Gmail address to sync documents and project history.</p>
-                    </div>
-                    <button 
-                      onClick={() => setIsPublicAuthOpen(true)}
-                      className="w-full bg-white text-black py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl active:scale-95 transition-transform"
-                    >
-                       Create Account
-                    </button>
-                 </div>
-                 
-                 <div className="glass-card p-10 rounded-[3rem] border-white/10 text-center space-y-6 opacity-60">
-                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.5em]">System Operations</p>
+
+                  <div className="glass-card p-10 rounded-[3rem] border-white/10 text-center space-y-6 opacity-60">
+                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.5em]">System Core Admin</p>
                     <button 
                       onClick={openAdmin}
                       className="w-full bg-blue-600/10 border border-blue-500/20 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-blue-500 active:scale-95 transition-transform"
                     >
-                       {isLoggedIn ? 'Launch Admin Panel' : 'Admin Login'}
+                       {isLoggedIn ? 'Launch Admin Panel' : 'Admin Terminal'}
                     </button>
                  </div>
                </div>
@@ -385,7 +440,7 @@ const App: React.FC = () => {
             { id: 'services', icon: LayoutGrid, label: 'Core' },
             { id: 'portals', icon: Zap, label: 'Gate' },
             { id: 'ai', icon: Bot, label: 'Expert' },
-            { id: 'account', icon: User, label: publicUser ? 'Me' : 'Join' }
+            { id: 'account', icon: UserIcon, label: publicUser ? 'Me' : 'Join' }
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -409,10 +464,10 @@ const App: React.FC = () => {
       </nav>
 
       {/* Overlays */}
-      {selectedForm && <FormAssistant form={selectedForm} onClose={() => setSelectedForm(null)} />}
-      {isWifiModalOpen && <WifiTopupAssistant onClose={() => setIsWifiModalOpen(false)} />}
-      {isGameModalOpen && <GameTopupAssistant onClose={() => setIsGameModalOpen(false)} />}
-      {isUniModalOpen && <UniversityProjectAssistant onClose={() => setIsUniModalOpen(false)} />}
+      {selectedForm && <FormAssistant form={selectedForm} addActivity={addActivity} onClose={() => setSelectedForm(null)} />}
+      {isWifiModalOpen && <WifiTopupAssistant addActivity={addActivity} onClose={() => setIsWifiModalOpen(false)} />}
+      {isGameModalOpen && <GameTopupAssistant addActivity={addActivity} onClose={() => setIsGameModalOpen(false)} />}
+      {isUniModalOpen && <UniversityProjectAssistant addActivity={addActivity} onClose={() => setIsUniModalOpen(false)} />}
       
       {isPublicAuthOpen && (
         <PublicAuth 

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   ShieldAlert, 
@@ -31,7 +30,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onBack, onLoginSuccess }) => {
   const [isSuccess, setIsSuccess] = useState(false);
 
   // Target Credentials Updated per request
-  const TARGET_USER = "Nipeshsir2025";
+  const TARGET_USER = "Nipesh Basnet";
   const TARGET_PASS = "9709596050";
 
   const handleLogin = (e: React.FormEvent) => {

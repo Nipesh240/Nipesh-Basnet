@@ -23,9 +23,11 @@ import {
   Layers
 } from 'lucide-react';
 import { solveUniversityProject } from '../services/geminiService.ts';
+import { UserActivity } from '../types.ts';
 
 interface UniversityProjectAssistantProps {
   onClose: () => void;
+  addActivity: (activity: Omit<UserActivity, 'id' | 'timestamp'>) => void;
 }
 
 const UNIVERSITIES = [
@@ -81,7 +83,7 @@ const UNIVERSITIES = [
 const YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
 const SEMESTERS = ['1st Semester', '2nd Semester', '3rd Semester', '4th Semester', '5th Semester', '6th Semester', '7th Semester', '8th Semester'];
 
-const UniversityProjectAssistant: React.FC<UniversityProjectAssistantProps> = ({ onClose }) => {
+const UniversityProjectAssistant: React.FC<UniversityProjectAssistantProps> = ({ onClose, addActivity }) => {
   const [step, setStep] = useState<'uni' | 'faculty' | 'details' | 'synthesis'>('uni');
   const [selectedUni, setSelectedUni] = useState<typeof UNIVERSITIES[0] | null>(null);
   const [selectedFaculty, setSelectedFaculty] = useState<string | null>(null);
@@ -90,7 +92,6 @@ const UniversityProjectAssistant: React.FC<UniversityProjectAssistantProps> = ({
   const [subjects, setSubjects] = useState('');
   const [year, setYear] = useState('4th Year');
   const [semester, setSemester] = useState('7th Semester');
-  const [contactInfo, setContactInfo] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiResult, setAiResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -129,6 +130,14 @@ const UniversityProjectAssistant: React.FC<UniversityProjectAssistantProps> = ({
         semester
       );
       setAiResult(result);
+      
+      // Save work to profile history
+      addActivity({
+        type: 'uni_project',
+        title: projectTopic,
+        status: 'completed',
+        details: `Synthesis report generated for ${selectedUni?.name}`
+      });
     } catch (err: any) {
       setError(err.message || "Synthesis Link Interrupted");
     } finally {
@@ -188,7 +197,7 @@ const UniversityProjectAssistant: React.FC<UniversityProjectAssistantProps> = ({
                       <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-slate-500 group-hover:text-indigo-400 group-hover:bg-indigo-500/10 transition-colors">
                         <Terminal className="w-5 h-5" />
                       </div>
-                      <span className="font-bold text-slate-200 group-hover:text-white text-lg tracking-tight">{uni.name}</span>
+                      <span className="font-bold text-slate-200 group-hover:text-white text-lg tracking-tight uppercase tracking-tight">{uni.name}</span>
                     </div>
                     <ChevronRight className="w-5 h-5 text-slate-700 group-hover:text-indigo-500 transition-transform group-hover:translate-x-2" />
                   </button>
@@ -218,9 +227,9 @@ const UniversityProjectAssistant: React.FC<UniversityProjectAssistantProps> = ({
                     <button 
                       key={faculty}
                       onClick={() => handleFacultySelect(faculty)}
-                      className="p-6 bg-white/2 border border-white/5 rounded-2xl text-left hover:border-indigo-500/40 hover:bg-indigo-500/5 transition-all group flex items-center justify-between"
+                      className="p-6 bg-white/2 border border-white/5 rounded-2xl text-left hover:border-indigo-500/40 hover:bg-indigo-500/5 transition-all group flex items-center justify-between shadow-lg"
                     >
-                      <span className="text-slate-300 group-hover:text-white font-medium text-sm tracking-wide">{faculty}</span>
+                      <span className="text-slate-300 group-hover:text-white font-black uppercase text-xs tracking-widest">{faculty}</span>
                       <ChevronRight className="w-4 h-4 text-slate-700 group-hover:text-indigo-500" />
                     </button>
                   ))}
@@ -263,7 +272,7 @@ const UniversityProjectAssistant: React.FC<UniversityProjectAssistantProps> = ({
                     />
                   </div>
 
-                  {/* YEAR AND SEMESTER SELECTION WITH INCREASED SPACE */}
+                  {/* YEAR AND SEMESTER SELECTION */}
                   <div className={`grid ${isBCA ? 'grid-cols-1' : 'grid-cols-2'} gap-8`}>
                     {!isBCA && (
                       <div className="flex flex-col gap-4">
@@ -273,7 +282,7 @@ const UniversityProjectAssistant: React.FC<UniversityProjectAssistantProps> = ({
                         <select 
                           value={year}
                           onChange={(e) => setYear(e.target.value)}
-                          className="w-full bg-black/40 border border-white/10 rounded-2xl p-6 text-sm outline-none focus:border-indigo-500/50 transition-all text-white appearance-none cursor-pointer shadow-xl"
+                          className="w-full bg-black/40 border border-white/10 rounded-2xl p-6 text-sm outline-none focus:border-indigo-500/50 transition-all text-white appearance-none cursor-pointer shadow-xl uppercase font-black tracking-widest"
                         >
                           {YEARS.map(y => <option key={y} value={y} className="bg-[#111827]">{y}</option>)}
                         </select>
@@ -286,7 +295,7 @@ const UniversityProjectAssistant: React.FC<UniversityProjectAssistantProps> = ({
                       <select 
                         value={semester}
                         onChange={(e) => setSemester(e.target.value)}
-                        className="w-full bg-black/40 border border-white/10 rounded-2xl p-6 text-sm outline-none focus:border-indigo-500/50 transition-all text-white appearance-none cursor-pointer shadow-xl"
+                        className="w-full bg-black/40 border border-white/10 rounded-2xl p-6 text-sm outline-none focus:border-indigo-500/50 transition-all text-white appearance-none cursor-pointer shadow-xl uppercase font-black tracking-widest"
                       >
                         {SEMESTERS.map(s => <option key={s} value={s} className="bg-[#111827]">{s}</option>)}
                       </select>
@@ -358,7 +367,7 @@ const UniversityProjectAssistant: React.FC<UniversityProjectAssistantProps> = ({
                   
                   <div className="pt-10 border-t border-white/5 grid grid-cols-2 gap-6">
                     <button className="flex items-center justify-center gap-3 bg-white/5 border border-white/10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-white hover:bg-white/10 transition-all shadow-lg active:scale-95">
-                      <Download className="w-4 h-4" /> Download Node
+                      <Download className="w-4 h-4" /> Save Node
                     </button>
                     <button className="flex items-center justify-center gap-3 bg-indigo-600/10 border border-indigo-500/20 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400 hover:bg-indigo-600/20 transition-all shadow-lg active:scale-95">
                       <Share2 className="w-4 h-4" /> Export Synthesis
@@ -371,7 +380,7 @@ const UniversityProjectAssistant: React.FC<UniversityProjectAssistantProps> = ({
                     </div>
                     <div className="text-left space-y-1">
                       <p className="text-[11px] font-black text-emerald-500 uppercase tracking-[0.2em] leading-relaxed">
-                        Sajilo Engineering Corps is ready for implementation. 
+                        Work successfully saved to your profile history. 
                       </p>
                       <span className="block text-slate-500 font-medium text-[9px] uppercase tracking-widest">Protocol ID: SJL-UNI-{Math.floor(Math.random() * 9000) + 1000}</span>
                     </div>
