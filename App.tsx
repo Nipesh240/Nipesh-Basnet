@@ -24,6 +24,7 @@ import { SERVICES, GOV_FORMS, getIcon, Logo } from './constants.tsx';
 import FormAssistant from './components/FormAssistant.tsx';
 import WifiTopupAssistant from './components/WifiTopupAssistant.tsx';
 import GameTopupAssistant from './components/GameTopupAssistant.tsx';
+import UniversityProjectAssistant from './components/UniversityProjectAssistant.tsx';
 import AIChat from './components/AIChat.tsx';
 import AdminLogin from './components/AdminLogin.tsx';
 import AdminDashboard from './components/AdminDashboard.tsx';
@@ -42,6 +43,7 @@ const App: React.FC = () => {
   const [selectedForm, setSelectedForm] = useState<typeof GOV_FORMS[0] | null>(null);
   const [isWifiModalOpen, setIsWifiModalOpen] = useState(false);
   const [isGameModalOpen, setIsGameModalOpen] = useState(false);
+  const [isUniModalOpen, setIsUniModalOpen] = useState(false);
   const [isConsultOpen, setIsConsultOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -57,6 +59,7 @@ const App: React.FC = () => {
       govForms: true,
       wifiTopup: true,
       gameTopup: true,
+      uniProjects: true,
       aiChat: true,
       consultation: true,
       globalLock: false
@@ -90,6 +93,7 @@ const App: React.FC = () => {
   const handleServiceAction = (serviceId: string) => {
     if (serviceId === 'wifi-topup' && systemConfig.wifiTopup) setIsWifiModalOpen(true);
     else if (serviceId === 'game-topup' && systemConfig.gameTopup) setIsGameModalOpen(true);
+    else if (serviceId === 'uni-projects' && systemConfig.uniProjects) setIsUniModalOpen(true);
     else if (systemConfig.consultation) setIsConsultOpen(true);
   };
 
@@ -191,7 +195,7 @@ const App: React.FC = () => {
             <Logo className="w-10 h-10 md:w-12 md:h-12 text-blue-500 group-hover:scale-110 transition-transform duration-500" />
             <div className="flex flex-col">
               <span className="font-heading font-black text-xl md:text-3xl tracking-tighter uppercase leading-tight text-white">
-                SAJILO <span className="text-blue-500">PROJECT</span>
+                SAJILO <span className="text-blue-500">PROJECT HUB</span>
               </span>
             </div>
           </div>
@@ -257,6 +261,7 @@ const App: React.FC = () => {
               if (s.id === 'wifi-topup') return systemConfig.wifiTopup;
               if (s.id === 'game-topup') return systemConfig.gameTopup;
               if (s.id === 'gov-forms') return systemConfig.govForms;
+              if (s.id === 'uni-projects') return systemConfig.uniProjects;
               return true;
             }).map((service) => (
               <div key={service.id} className="glass-card p-14 rounded-[4.5rem] group hover:border-white/20 transition-all">
@@ -275,7 +280,7 @@ const App: React.FC = () => {
       <footer className="bg-[#010103] py-48 px-10 border-t border-white/5">
         <div className="max-w-7xl mx-auto flex flex-col items-center text-center">
           <Logo className="w-16 h-16 text-blue-500 mb-12" />
-          <h2 className="font-heading text-4xl font-black uppercase tracking-tighter mb-8">SAJILO <span className="text-blue-500">PROJECT</span></h2>
+          <h2 className="font-heading text-4xl font-black uppercase tracking-tighter mb-8">SAJILO <span className="text-blue-500">PROJECT HUB</span></h2>
           <div className="flex flex-col gap-8 items-center">
              <div className="flex gap-10 text-[10px] font-black text-slate-600 uppercase tracking-widest">
                <a href="#" className="hover:text-white transition-colors">Security</a>
@@ -302,6 +307,7 @@ const App: React.FC = () => {
       {selectedForm && <FormAssistant form={selectedForm} onClose={() => setSelectedForm(null)} />}
       {isWifiModalOpen && <WifiTopupAssistant onClose={() => setIsWifiModalOpen(false)} />}
       {isGameModalOpen && <GameTopupAssistant onClose={() => setIsGameModalOpen(false)} />}
+      {isUniModalOpen && <UniversityProjectAssistant onClose={() => setIsUniModalOpen(false)} />}
       {isConsultOpen && <ConsultationModal onClose={() => setIsConsultOpen(false)} />}
       {systemConfig.aiChat && <AIChat />}
 

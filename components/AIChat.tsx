@@ -7,7 +7,7 @@ import { generateChatResponse } from '../services/geminiService.ts';
 const AIChat: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'model', content: "UPLINK ESTABLISHED: Sajilo Project Strategic Core online. I am optimized for national digital orchestration. How shall we evolve your node today?" }
+    { role: 'model', content: "UPLINK ESTABLISHED: Sajilo Project Hub Strategic Core online. I am optimized for national digital orchestration. How shall we evolve your node today?" }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -78,7 +78,7 @@ const AIChat: React.FC = () => {
                 <Bot className="relative w-6 h-6 text-blue-400" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500 whitespace-nowrap">SAJILO AI</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500 whitespace-nowrap">SAJILO HUB AI</span>
                 <span className="text-xs font-bold text-white tracking-widest uppercase">Strategic Counsel</span>
               </div>
             </div>

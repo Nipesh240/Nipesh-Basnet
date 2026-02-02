@@ -25,7 +25,8 @@ import {
   Gamepad2,
   Trophy,
   Sword,
-  Target
+  Target,
+  GraduationCap
 } from 'lucide-react';
 import { Service, Testimonial } from './types.ts';
 
@@ -68,6 +69,13 @@ export const SERVICES: Service[] = [
     description: 'Expert assistance in filling out Passport, Driving License, and Citizenship forms accurately.',
     icon: 'ClipboardList',
     color: 'blue'
+  },
+  {
+    id: 'uni-projects',
+    title: 'University Project Node',
+    description: 'Professional guidance and development for Final Year Engineering, CS, and IT projects.',
+    icon: 'GraduationCap',
+    color: 'indigo'
   },
   {
     id: 'wifi-topup',
@@ -176,7 +184,7 @@ export const TESTIMONIALS: Testimonial[] = [
 
 export const getIcon = (name: string, className?: string) => {
   const icons: Record<string, any> = {
-    Cloud, Code2, ShieldAlert, Cpu, Database, Workflow, Zap, Globe, Layers, Building2, Users2, FileText, CreditCard, Car, ClipboardList, Layout, Wifi, ShieldCheck, Globe2, Smartphone, HardDrive, Gamepad2, Trophy, Sword, Target
+    Cloud, Code2, ShieldAlert, Cpu, Database, Workflow, Zap, Globe, Layers, Building2, Users2, FileText, CreditCard, Car, ClipboardList, Layout, Wifi, ShieldCheck, Globe2, Smartphone, HardDrive, Gamepad2, Trophy, Sword, Target, GraduationCap
   };
   const IconComponent = icons[name] || Zap;
   return <IconComponent className={className} />;

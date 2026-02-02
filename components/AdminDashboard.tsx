@@ -19,7 +19,8 @@ import {
   Signal,
   WifiOff,
   Unplug,
-  ShieldAlert
+  ShieldAlert,
+  GraduationCap
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -36,6 +37,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onLogout, syst
 
   const modules = [
     { key: 'govForms', label: 'Gov-Form Protocol', icon: <Layout className="w-5 h-5" />, desc: 'Passport & License portal visibility.' },
+    { key: 'uniProjects', label: 'Academic Uplink', icon: <GraduationCap className="w-5 h-5" />, desc: 'University project module visibility.' },
     { key: 'wifiTopup', label: 'ISP Recharge Node', icon: <Signal className="w-5 h-5" />, desc: 'Domestic ISP topup availability.' },
     { key: 'gameTopup', label: 'Gaming Credit Hub', icon: <Database className="w-5 h-5" />, desc: 'UC/Diamond recharge module.' },
     { key: 'aiChat', label: 'AI Concierge Engine', icon: <MessageSquare className="w-5 h-5" />, desc: 'Floating AI strategist chat.' },
