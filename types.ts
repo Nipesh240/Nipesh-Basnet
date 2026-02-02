@@ -28,3 +28,11 @@ export interface UserActivity {
   status: 'pending' | 'completed' | 'dispatched';
   details: string;
 }
+
+export interface SystemNotification {
+  id: string;
+  type: 'update' | 'security' | 'info';
+  message: string;
+  timestamp: string;
+  read: boolean;
+}

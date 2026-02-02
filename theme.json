@@ -1,0 +1,68 @@
+
+{
+  "theme": {
+    "name": "Sajilo Hub Cyber-Domestic",
+    "version": "4.2.0",
+    "lastUpdated": "2024-05-20",
+    "author": "Nipesh Basnet",
+    "metadata": {
+      "id": "OS_v4.2.0_NODE_KTM",
+      "description": "Futuristic domestic digital infrastructure theme optimized for low-latency visual feedback and biometric-style UI."
+    },
+    "palette": {
+      "brand": {
+        "primary": "#0070f3",
+        "primaryGlow": "rgba(0, 112, 243, 0.4)",
+        "secondary": "#8b5cf6",
+        "secondaryGlow": "rgba(139, 92, 246, 0.4)"
+      },
+      "status": {
+        "success": "#10b981",
+        "successGlow": "rgba(16, 185, 129, 0.4)",
+        "error": "#ef4444",
+        "errorGlow": "rgba(239, 68, 68, 0.4)",
+        "warning": "#f59e0b",
+        "info": "#3b82f6"
+      },
+      "interface": {
+        "background": "#03040a",
+        "surface": "#111827",
+        "glass": "rgba(255, 255, 255, 0.03)",
+        "border": "rgba(255, 255, 255, 0.08)",
+        "grid": "rgba(255, 255, 255, 0.05)"
+      }
+    },
+    "typography": {
+      "main": "Inter, sans-serif",
+      "heading": "Space Grotesk, sans-serif",
+      "display": "Outfit, sans-serif",
+      "monospaced": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+      "scales": {
+        "tagline": "10px",
+        "label": "12px",
+        "body": "14px",
+        "subheading": "18px",
+        "heading": "32px",
+        "hero": "48px"
+      }
+    },
+    "animations": {
+      "logoRotation": "rotate-slow 15s linear infinite",
+      "auraSpin": "rotate-slow-ccw 25s linear infinite",
+      "statusPulse": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+      "shake": "shake 0.15s ease-in-out 0s 2"
+    },
+    "components": {
+      "loginGate": {
+        "blurRadius": "100px",
+        "borderRadius": "3rem",
+        "inputPadding": "1.125rem",
+        "buttonTracking": "0.5em"
+      },
+      "hud": {
+        "ringOpacity": 0.1,
+        "glassBlur": "20px"
+      }
+    }
+  }
+}

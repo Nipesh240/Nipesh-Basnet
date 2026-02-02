@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Home,
   LayoutGrid,
@@ -22,6 +22,7 @@ import {
   Bell,
   LogOut,
   UserPlus,
+  LogIn,
   AlertCircle,
   Clock,
   ExternalLink,
@@ -29,7 +30,12 @@ import {
   FileText,
   Wifi,
   Gamepad2,
-  GraduationCap
+  GraduationCap,
+  Info,
+  Trash2,
+  // Fix: Added missing icons
+  RefreshCw,
+  ShieldCheck
 } from 'lucide-react';
 import { SERVICES, GOV_FORMS, getIcon, Logo } from './constants.tsx';
 import FormAssistant from './components/FormAssistant.tsx';
@@ -41,7 +47,7 @@ import AdminLogin from './components/AdminLogin.tsx';
 import AdminDashboard from './components/AdminDashboard.tsx';
 import PublicAuth from './components/PublicAuth.tsx';
 import StartupGate from './components/StartupGate.tsx';
-import { UserActivity } from './types.ts';
+import { UserActivity, SystemNotification } from './types.ts';
 
 type TabType = 'home' | 'services' | 'portals' | 'ai' | 'account';
 
@@ -53,6 +59,7 @@ const App: React.FC = () => {
   const [isGameModalOpen, setIsGameModalOpen] = useState(false);
   const [isUniModalOpen, setIsUniModalOpen] = useState(false);
   const [isPublicAuthOpen, setIsPublicAuthOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
   
   // Auth States
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
@@ -73,6 +80,11 @@ const App: React.FC = () => {
     return saved ? JSON.parse(saved) : [];
   });
 
+  const [notifications, setNotifications] = useState<SystemNotification[]>(() => {
+    const saved = localStorage.getItem('sjl_notifications');
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const [systemConfig, setSystemConfig] = useState(() => {
     const saved = localStorage.getItem('sjl_system_config');
     return saved ? JSON.parse(saved) : {
@@ -86,16 +98,54 @@ const App: React.FC = () => {
     };
   });
 
+  const addNotification = useCallback((notif: Omit<SystemNotification, 'id' | 'timestamp' | 'read'>) => {
+    const newNotif: SystemNotification = {
+      ...notif,
+      id: `NOTIF-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      read: false
+    };
+    setNotifications(prev => {
+      const updated = [newNotif, ...prev].slice(0, 20);
+      localStorage.setItem('sjl_notifications', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const markNotifsRead = () => {
+    setNotifications(prev => {
+      const updated = prev.map(n => ({ ...n, read: true }));
+      localStorage.setItem('sjl_notifications', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const clearNotifications = () => {
+    setNotifications([]);
+    localStorage.removeItem('sjl_notifications');
+  };
+
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    
+    // Initial Update Notification (Simulated)
+    const hasSeenUpdate = localStorage.getItem('sjl_update_v420_notified');
+    if (!hasSeenUpdate) {
+      addNotification({
+        type: 'update',
+        message: 'Sajilo OS v4.2.0 deployed. New University Project Node and Account Sync active.'
+      });
+      localStorage.setItem('sjl_update_v420_notified', 'true');
+    }
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [addNotification]);
 
   const addActivity = useCallback((activity: Omit<UserActivity, 'id' | 'timestamp'>) => {
     const newActivity: UserActivity = {
@@ -126,8 +176,10 @@ const App: React.FC = () => {
     localStorage.removeItem('sjl_public_user');
     localStorage.removeItem('sjl_app_unlocked');
     localStorage.removeItem('sjl_user_activities');
+    localStorage.removeItem('sjl_notifications');
     setPublicUser(null);
     setActivities([]);
+    setNotifications([]);
     setIsAppUnlocked(false);
   };
 
@@ -140,6 +192,8 @@ const App: React.FC = () => {
       default: return <Activity className="w-4 h-4" />;
     }
   };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   if (!isOnline) {
     return (
@@ -163,6 +217,11 @@ const App: React.FC = () => {
           localStorage.setItem('sjl_public_user', JSON.stringify(userData));
           localStorage.setItem('sjl_app_unlocked', 'true');
           setIsAppUnlocked(true);
+          // Add notification for login save
+          addNotification({
+            type: 'security',
+            message: `Login successful. Identity ${userData.name} synchronized and data saved locally.`
+          });
         }} 
       />
     );
@@ -182,17 +241,70 @@ const App: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-4">
-             <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center relative">
-                <Bell className="w-4 h-4 text-slate-400" />
-                <div className="absolute top-0 right-0 w-2 h-2 bg-blue-500 rounded-full border-2 border-[#03040a]" />
+             <div className="relative">
+                <button 
+                  onClick={() => { setIsNotifOpen(!isNotifOpen); markNotifsRead(); }}
+                  className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center relative active:scale-95 transition-transform"
+                >
+                  <Bell className={`w-5 h-5 transition-colors ${isNotifOpen ? 'text-blue-500' : 'text-slate-400'}`} />
+                  {unreadCount > 0 && (
+                    <div className="absolute top-1 right-1 w-4 h-4 bg-blue-500 rounded-full border-2 border-[#03040a] flex items-center justify-center">
+                      <span className="text-[8px] font-black text-white">{unreadCount}</span>
+                    </div>
+                  )}
+                </button>
+                
+                {/* Notification Dropdown */}
+                {isNotifOpen && (
+                  <div className="absolute top-14 right-0 w-[300px] glass-card border-white/10 rounded-[2rem] shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300 z-[120]">
+                    <div className="p-5 border-b border-white/5 flex items-center justify-between bg-white/2">
+                      <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest">System Alerts</span>
+                      <button onClick={clearNotifications} className="p-1.5 hover:bg-white/5 rounded-lg text-slate-700 hover:text-red-500 transition-colors">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <div className="max-h-[350px] overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                      {notifications.length === 0 ? (
+                        <div className="py-10 text-center flex flex-col items-center gap-3 opacity-30">
+                          <Bell className="w-6 h-6" />
+                          <span className="text-[9px] font-black uppercase tracking-widest">All protocols nominal</span>
+                        </div>
+                      ) : (
+                        notifications.map((n) => (
+                          <div key={n.id} className="p-4 rounded-2xl bg-white/2 border border-white/5 hover:border-white/10 transition-colors group">
+                            <div className="flex gap-3">
+                              <div className={`mt-0.5 w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                                n.type === 'update' ? 'bg-blue-500/10 text-blue-500' : 
+                                n.type === 'security' ? 'bg-emerald-500/10 text-emerald-500' : 
+                                'bg-slate-500/10 text-slate-500'
+                              }`}>
+                                {n.type === 'update' ? <RefreshCw className="w-4 h-4" /> : 
+                                 n.type === 'security' ? <ShieldCheck className="w-4 h-4" /> : 
+                                 <Info className="w-4 h-4" />}
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <p className="text-[10px] font-bold text-slate-200 leading-relaxed uppercase">{n.message}</p>
+                                <span className="text-[7px] font-mono text-slate-700">{new Date(n.timestamp).toLocaleTimeString()}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <div className="p-4 border-t border-white/5 bg-black/20 text-center">
+                       <span className="text-[8px] font-black text-slate-700 uppercase tracking-[0.3em]">Authorized Hub Logs</span>
+                    </div>
+                  </div>
+                )}
              </div>
+
              {publicUser && (
                <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20">
                   <span className="text-[8px] font-black uppercase text-blue-400 tracking-widest truncate max-w-[80px]">{publicUser.name}</span>
                </div>
              )}
-             <button onClick={openAdmin} className="w-8 h-8 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                <Shield className="w-4 h-4 text-blue-500" />
+             <button onClick={openAdmin} className="w-10 h-10 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all group">
+                <Shield className="w-5 h-5 text-blue-500 group-hover:text-white" />
              </button>
           </div>
         </div>
@@ -477,6 +589,10 @@ const App: React.FC = () => {
             localStorage.setItem('sjl_public_user', JSON.stringify(userData));
             setIsPublicAuthOpen(false);
             setActiveTab('account');
+            addNotification({
+              type: 'security',
+              message: `New account verified: ${userData.name}. Login data saved to local secure storage.`
+            });
           }}
         />
       )}
@@ -488,6 +604,10 @@ const App: React.FC = () => {
             setIsAdminLoginOpen(false);
             setIsLoggedIn(true);
             setIsAdminDashboardOpen(true);
+            addNotification({
+              type: 'security',
+              message: 'Administrative Terminal uplink established. Remote configuration active.'
+            });
           }} 
         />
       )}
