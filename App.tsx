@@ -1,9 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  ArrowUpRight,
-  ChevronRight,
-  Globe,
+  Home,
+  LayoutGrid,
+  Zap,
+  Bot,
+  User,
   Activity,
   Box,
   Terminal,
@@ -11,14 +13,16 @@ import {
   CheckCircle2,
   Loader2,
   Code,
-  Layers,
   Shield,
-  Lock,
   ShieldAlert,
   Unplug,
   WifiOff,
-  RefreshCw,
-  AlertTriangle
+  ChevronRight,
+  Menu,
+  Bell,
+  LogOut,
+  UserPlus,
+  AlertCircle
 } from 'lucide-react';
 import { SERVICES, GOV_FORMS, getIcon, Logo } from './constants.tsx';
 import FormAssistant from './components/FormAssistant.tsx';
@@ -28,31 +32,28 @@ import UniversityProjectAssistant from './components/UniversityProjectAssistant.
 import AIChat from './components/AIChat.tsx';
 import AdminLogin from './components/AdminLogin.tsx';
 import AdminDashboard from './components/AdminDashboard.tsx';
+import PublicAuth from './components/PublicAuth.tsx';
 
-const HUDOverlay = () => (
-  <div className="fixed inset-0 pointer-events-none z-[100] border-[20px] border-transparent">
-    <div className="absolute top-0 left-0 w-32 h-32 border-t-[1px] border-l-[1px] border-white/10 opacity-30" />
-    <div className="absolute top-0 right-0 w-32 h-32 border-t-[1px] border-r-[1px] border-white/10 opacity-30" />
-    <div className="absolute bottom-0 left-0 w-32 h-32 border-b-[1px] border-l-[1px] border-white/10 opacity-30" />
-    <div className="absolute bottom-0 right-0 w-32 h-32 border-b-[1px] border-r-[1px] border-white/10 opacity-30" />
-  </div>
-);
+type TabType = 'home' | 'services' | 'portals' | 'ai' | 'account';
 
 const App: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<TabType>('home');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [selectedForm, setSelectedForm] = useState<typeof GOV_FORMS[0] | null>(null);
   const [isWifiModalOpen, setIsWifiModalOpen] = useState(false);
   const [isGameModalOpen, setIsGameModalOpen] = useState(false);
   const [isUniModalOpen, setIsUniModalOpen] = useState(false);
-  const [isConsultOpen, setIsConsultOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  // Admin States
+  const [isPublicAuthOpen, setIsPublicAuthOpen] = useState(false);
+  
+  // Auth States
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
   const [isAdminDashboardOpen, setIsAdminDashboardOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  
-  // System Config with Persistence
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Admin login
+  const [publicUser, setPublicUser] = useState<any>(() => {
+    const saved = localStorage.getItem('sjl_public_user');
+    return saved ? JSON.parse(saved) : null;
+  });
+
   const [systemConfig, setSystemConfig] = useState(() => {
     const saved = localStorage.getItem('sjl_system_config');
     return saved ? JSON.parse(saved) : {
@@ -66,250 +67,364 @@ const App: React.FC = () => {
     };
   });
 
-  // Connection Monitoring
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('sjl_system_config', JSON.stringify(systemConfig));
-  }, [systemConfig]);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const handleServiceAction = (serviceId: string) => {
     if (serviceId === 'wifi-topup' && systemConfig.wifiTopup) setIsWifiModalOpen(true);
     else if (serviceId === 'game-topup' && systemConfig.gameTopup) setIsGameModalOpen(true);
     else if (serviceId === 'uni-projects' && systemConfig.uniProjects) setIsUniModalOpen(true);
-    else if (systemConfig.consultation) setIsConsultOpen(true);
+    else if (serviceId === 'gov-forms') setActiveTab('portals');
   };
 
   const openAdmin = () => {
-    if (isLoggedIn) {
-      setIsAdminDashboardOpen(true);
-    } else {
-      setIsAdminLoginOpen(true);
-    }
+    if (isLoggedIn) setIsAdminDashboardOpen(true);
+    else setIsAdminLoginOpen(true);
   };
 
-  // Offline Screen Logic
+  const logoutPublic = () => {
+    localStorage.removeItem('sjl_public_user');
+    setPublicUser(null);
+  };
+
   if (!isOnline) {
     return (
-      <div className="min-h-screen bg-[#03040a] flex items-center justify-center p-8 text-center relative overflow-hidden font-sans">
-        <div className="absolute inset-0 grid-bg opacity-10" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-600/10 blur-[150px] rounded-full animate-pulse" />
-        
-        <div className="relative z-10 max-w-xl">
-          <div className="w-24 h-24 bg-amber-600/10 border border-amber-600/20 rounded-[2rem] flex items-center justify-center mx-auto mb-12 shadow-[0_0_50px_rgba(217,119,6,0.2)]">
-            <WifiOff className="w-12 h-12 text-amber-600" />
-          </div>
-          <h1 className="font-heading text-4xl md:text-5xl font-black tracking-tighter text-white uppercase mb-6 leading-none">
-            UPLINK <span className="text-amber-500">TERMINATED</span>
-          </h1>
-          <p className="text-slate-500 text-sm md:text-lg font-light leading-relaxed mb-12 max-w-md mx-auto">
-            The Sajilo Gateway requires an active internet node to process digital orchestrations. Your domestic connection has been lost.
-          </p>
-          
-          <div className="flex flex-col items-center gap-4">
-             <div className="px-5 py-2.5 rounded-full bg-amber-500/5 border border-amber-500/10 flex items-center gap-3">
-                <Loader2 className="w-4 h-4 text-amber-500 animate-spin" />
-                <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.3em]">Attempting Re-sync...</span>
-             </div>
-             <p className="text-[9px] text-slate-700 font-mono uppercase tracking-widest mt-8">
-               Status: NO_RESPONSE_FROM_DOMESTIC_SERVER
-             </p>
-          </div>
+      <div className="min-h-screen bg-[#03040a] flex items-center justify-center p-8 text-center relative overflow-hidden">
+        <div className="relative z-10">
+          <WifiOff className="w-16 h-16 text-amber-500 mx-auto mb-6" />
+          <h1 className="text-2xl font-black uppercase text-white mb-2">Offline Node</h1>
+          <p className="text-slate-500 text-xs tracking-widest uppercase mb-8">Waiting for domestic uplink...</p>
+          <div className="w-12 h-1 bg-amber-500/20 rounded-full mx-auto animate-pulse" />
         </div>
-      </div>
-    );
-  }
-
-  // Blocked Screen for Public Users
-  if (systemConfig.globalLock && !isLoggedIn) {
-    return (
-      <div className="min-h-screen bg-[#03040a] flex items-center justify-center p-6 text-center relative overflow-hidden font-sans">
-        <div className="absolute inset-0 grid-bg opacity-10" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-red-600/10 blur-[150px] rounded-full animate-pulse" />
-        
-        <div className="relative z-10 max-w-2xl">
-          <div className="w-24 h-24 bg-red-600/10 border border-red-600/20 rounded-3xl flex items-center justify-center mx-auto mb-10 shadow-[0_0_50px_rgba(220,38,38,0.2)]">
-            <ShieldAlert className="w-12 h-12 text-red-600" />
-          </div>
-          <h1 className="font-heading text-4xl md:text-6xl font-black tracking-tighter text-white uppercase mb-6 leading-none">
-            ACCESS <span className="text-red-600">RESTRICTED</span>
-          </h1>
-          <p className="text-slate-500 text-lg md:text-xl font-light leading-relaxed mb-12">
-            The Sajilo Domestic Gateway is currently in <span className="text-red-500 font-bold uppercase tracking-widest">Lockdown Mode</span>. All public interfaces have been terminated by the lead administrator.
-          </p>
-          <div className="flex flex-col items-center gap-6">
-            <div className="px-6 py-3 rounded-full bg-red-600/5 border border-red-600/10">
-              <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.4em]">Error_Code: SYS_GATE_TERMINATED</span>
-            </div>
-            <button 
-              onClick={openAdmin}
-              className="text-[10px] font-black text-slate-800 hover:text-slate-400 transition-colors uppercase tracking-[0.5em] mt-20"
-            >
-              Administrator_Login
-            </button>
-          </div>
-        </div>
-
-        {isAdminLoginOpen && (
-          <AdminLogin 
-            onBack={() => setIsAdminLoginOpen(false)} 
-            onLoginSuccess={() => {
-              setIsAdminLoginOpen(false);
-              setIsLoggedIn(true);
-              setIsAdminDashboardOpen(true);
-            }} 
-          />
-        )}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#03040a] text-white font-sans selection:bg-blue-500/40 overflow-x-hidden animate-in fade-in duration-1000">
-      <HUDOverlay />
+    <div className="min-h-screen bg-[#03040a] text-white flex flex-col font-sans selection:bg-blue-500/40">
       
-      <div className="fixed inset-0 grid-bg pointer-events-none z-0" />
-      <div className="orb top-[-20%] left-[-10%] opacity-30" />
-      <div className="orb bottom-[-20%] right-[-10%] opacity-30 !bg-purple-600" />
-
-      <nav className={`fixed w-full z-[110] transition-all duration-700 ${scrolled ? 'top-4 px-4' : 'top-0'}`}>
-        <div className={`max-w-7xl mx-auto px-6 sm:px-10 flex items-center justify-between transition-all duration-500 ${scrolled ? 'glass-card py-4 rounded-[2rem] border-white/20' : 'bg-transparent py-8 border-transparent'}`}>
-          <div className="flex items-center gap-4 cursor-pointer group shrink-0" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
-            <Logo className="w-10 h-10 md:w-12 md:h-12 text-blue-500 group-hover:scale-110 transition-transform duration-500" />
+      {/* HUD Header */}
+      <header className="fixed top-0 left-0 right-0 z-[100] safe-top glass-card border-b border-white/5 backdrop-blur-3xl">
+        <div className="px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Logo className="w-8 h-8 text-blue-500" />
             <div className="flex flex-col">
-              <span className="font-heading font-black text-xl md:text-3xl tracking-tighter uppercase leading-tight text-white">
-                SAJILO <span className="text-blue-500">PROJECT HUB</span>
-              </span>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">Sajilo Hub</span>
+              <span className="text-[8px] font-mono text-slate-500 uppercase">OS_v4.2.0_NODE_KTM</span>
             </div>
           </div>
-          
-          <div className="hidden lg:flex items-center gap-8">
-            <a href="#services" className="text-[11px] font-black text-slate-500 hover:text-white transition-all uppercase tracking-[0.3em]">Capabilities</a>
-            {systemConfig.govForms && <a href="#gov-forms" className="text-[11px] font-black text-slate-500 hover:text-white transition-all uppercase tracking-[0.3em]">Access Portal</a>}
-            
-            {systemConfig.consultation && (
-              <button 
-                onClick={() => setIsConsultOpen(true)}
-                className="bg-white text-black px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] transition-all hover:bg-blue-500 hover:text-white shadow-xl"
-              >
-                Initialize Sync
-              </button>
-            )}
+          <div className="flex items-center gap-4">
+             <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center relative">
+                <Bell className="w-4 h-4 text-slate-400" />
+                <div className="absolute top-0 right-0 w-2 h-2 bg-blue-500 rounded-full border-2 border-[#03040a]" />
+             </div>
+             {publicUser && (
+               <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20">
+                  <span className="text-[8px] font-black uppercase text-blue-400 tracking-widest truncate max-w-[80px]">{publicUser.name}</span>
+               </div>
+             )}
+             <button onClick={openAdmin} className="w-8 h-8 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                <Shield className="w-4 h-4 text-blue-500" />
+             </button>
           </div>
-        </div>
-      </nav>
-
-      <header className="relative pt-80 pb-64 px-10 text-center">
-        <div className="max-w-7xl mx-auto relative z-10">
-          <h1 className="font-heading text-6xl sm:text-7xl md:text-9xl font-black tracking-tighter mb-14 leading-[0.85] glow-text animate-in fade-in slide-in-from-bottom-12 duration-1000">
-            DIGITAL <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-white uppercase">Sovereign.</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-slate-500 max-w-4xl mx-auto mb-20 leading-relaxed font-light">
-            Empowering the nation with high-performance digital orchestration. Professional e-governance and domestic enterprise scaling.
-          </p>
         </div>
       </header>
 
-      {systemConfig.govForms && (
-        <section id="gov-forms" className="py-64 px-10 bg-[#010105]">
-          <div className="max-w-7xl mx-auto">
-            <div className="mb-32">
-              <span className="text-[11px] font-black text-blue-500 uppercase tracking-[0.5em] mb-6 block">Section_01</span>
-              <h2 className="font-heading text-5xl md:text-9xl font-black tracking-tighter uppercase">PORTAL <br /> ACCESS.</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-              {GOV_FORMS.map((form) => (
-                <div key={form.id} className="glass-card p-12 rounded-[4rem] group hover:border-blue-500/40 transition-all">
-                  <div className="w-16 h-16 rounded-[2rem] mb-12 flex items-center justify-center bg-blue-500/10 text-blue-500 border border-blue-500/20 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                    {getIcon(form.icon, "w-8 h-8")}
-                  </div>
-                  <h3 className="font-heading text-3xl font-bold mb-6 tracking-tighter uppercase">{form.title}</h3>
-                  <p className="text-slate-600 text-base mb-12 font-light">{form.description}</p>
-                  <button onClick={() => setSelectedForm(form)} className="w-full bg-white text-black py-5 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] hover:scale-105 transition-all">START PROTOCOL</button>
+      {/* Viewport Area */}
+      <main className="flex-1 mt-[72px] pb-[90px] overflow-y-auto px-6 pt-6">
+        
+        {activeTab === 'home' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+            <div className="relative rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-900 p-8 shadow-2xl shadow-blue-900/20">
+              <div className="relative z-10">
+                <h1 className="text-3xl font-black uppercase tracking-tighter leading-none mb-4">Digitizing <br /> The Nation.</h1>
+                <p className="text-[11px] text-blue-100/70 font-medium tracking-widest uppercase mb-8">Professional domestic engineering node.</p>
+                <div className="flex gap-3">
+                  <button 
+                    onClick={() => setActiveTab('services')}
+                    className="bg-white text-black px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-transform"
+                  >
+                    Launch
+                  </button>
+                  {!publicUser && (
+                    <button 
+                      onClick={() => setIsPublicAuthOpen(true)}
+                      className="bg-black/30 backdrop-blur-md text-white border border-white/20 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-transform"
+                    >
+                      Join Portal
+                    </button>
+                  )}
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      <section id="services" className="py-64 px-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-40">
-            <h2 className="font-heading text-5xl md:text-[10rem] font-black tracking-tighter uppercase leading-none">CAPABILITIES</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {SERVICES.filter(s => {
-              if (s.id === 'wifi-topup') return systemConfig.wifiTopup;
-              if (s.id === 'game-topup') return systemConfig.gameTopup;
-              if (s.id === 'gov-forms') return systemConfig.govForms;
-              if (s.id === 'uni-projects') return systemConfig.uniProjects;
-              return true;
-            }).map((service) => (
-              <div key={service.id} className="glass-card p-14 rounded-[4.5rem] group hover:border-white/20 transition-all">
-                <div className="w-20 h-20 rounded-[2.5rem] mb-12 flex items-center justify-center bg-white/5 group-hover:text-blue-500 transition-all">
-                  {getIcon(service.icon, "w-10 h-10")}
-                </div>
-                <h3 className="font-heading text-3xl font-bold mb-8 tracking-tighter uppercase">{service.title}</h3>
-                <p className="text-slate-500 text-lg leading-relaxed mb-16 font-light">{service.description}</p>
-                <button onClick={() => handleServiceAction(service.id)} className="text-[11px] font-black text-slate-500 hover:text-white uppercase tracking-[0.4em]">ACCESS MODULE <ChevronRight className="w-5 h-5 inline" /></button>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+              <Activity className="absolute bottom-[-20px] right-[-20px] w-48 h-48 text-white/5 rotate-12" />
+            </div>
 
-      <footer className="bg-[#010103] py-48 px-10 border-t border-white/5">
-        <div className="max-w-7xl mx-auto flex flex-col items-center text-center">
-          <Logo className="w-16 h-16 text-blue-500 mb-12" />
-          <h2 className="font-heading text-4xl font-black uppercase tracking-tighter mb-8">SAJILO <span className="text-blue-500">PROJECT HUB</span></h2>
-          <div className="flex flex-col gap-8 items-center">
-             <div className="flex gap-10 text-[10px] font-black text-slate-600 uppercase tracking-widest">
-               <a href="#" className="hover:text-white transition-colors">Security</a>
-               <a href="#" className="hover:text-white transition-colors">Manifesto</a>
-               <a href="#" className="hover:text-white transition-colors">Privacy</a>
-             </div>
-             
-             <div 
-              onClick={openAdmin}
-              className="mt-8 flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 group hover:border-blue-500/30 transition-all cursor-pointer"
-             >
-                <Code className="w-4 h-4 text-blue-500" />
-                <div className="flex flex-col text-left">
-                  <span className="text-[7px] font-black text-slate-600 uppercase tracking-widest">Lead Engineer</span>
-                  <span className="text-[11px] font-bold text-white uppercase tracking-tight group-hover:text-blue-400 transition-colors">Nipesh Basnet</span>
+            <div className="grid grid-cols-2 gap-4">
+               <div className="glass-card p-6 rounded-[2rem] border-white/10">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4">
+                     <Zap className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <h3 className="text-xs font-black uppercase tracking-widest text-white mb-1">Active Sync</h3>
+                  <p className="text-[9px] text-slate-500 uppercase">Latency: 14ms</p>
+               </div>
+               <div className="glass-card p-6 rounded-[2rem] border-white/10">
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center mb-4">
+                     <Shield className="w-5 h-5 text-purple-500" />
+                  </div>
+                  <h3 className="text-xs font-black uppercase tracking-widest text-white mb-1">Node Status</h3>
+                  <p className="text-[9px] text-slate-500 uppercase">Operational</p>
+               </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between px-2">
+                 <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Priority Portals</h4>
+                 <ChevronRight className="w-4 h-4 text-slate-600" />
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                 {GOV_FORMS.slice(0, 2).map(form => (
+                   <button 
+                    key={form.id}
+                    onClick={() => setSelectedForm(form)}
+                    className="flex items-center justify-between p-5 bg-white/5 border border-white/10 rounded-[1.5rem] active:bg-white/10 transition-colors"
+                   >
+                     <div className="flex items-center gap-4 text-left">
+                        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-blue-500">
+                          {getIcon(form.icon, "w-5 h-5")}
+                        </div>
+                        <div>
+                           <p className="text-[11px] font-bold text-white uppercase">{form.title}</p>
+                           <p className="text-[9px] text-slate-500 uppercase">Citizen Service Portal</p>
+                        </div>
+                     </div>
+                     <ChevronRight className="w-4 h-4 text-slate-700" />
+                   </button>
+                 ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'services' && (
+          <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-6">
+            <div className="px-2 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-black uppercase tracking-tighter text-white">Capabilities</h2>
+                <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mt-1">Sajilo Infrastructure Hub</p>
+              </div>
+              {!publicUser && (
+                <button onClick={() => setIsPublicAuthOpen(true)} className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
+                  <UserPlus className="w-5 h-5 text-blue-500" />
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-1 gap-4">
+               {SERVICES.filter(s => {
+                  if (s.id === 'wifi-topup') return systemConfig.wifiTopup;
+                  if (s.id === 'game-topup') return systemConfig.gameTopup;
+                  if (s.id === 'uni-projects') return systemConfig.uniProjects;
+                  return true;
+               }).map(service => (
+                 <button 
+                  key={service.id}
+                  onClick={() => handleServiceAction(service.id)}
+                  className="glass-card p-6 rounded-[2.5rem] border-white/10 text-left active:scale-[0.98] transition-transform flex flex-col items-start gap-4"
+                 >
+                   <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-blue-500">
+                     {getIcon(service.icon, "w-6 h-6")}
+                   </div>
+                   <div>
+                     <h3 className="text-sm font-black uppercase tracking-widest text-white mb-1">{service.title}</h3>
+                     <p className="text-[10px] text-slate-500 font-medium leading-relaxed uppercase">{service.description}</p>
+                   </div>
+                   <div className="w-full h-[1px] bg-white/5 mt-2" />
+                   <div className="flex items-center gap-2 text-[8px] font-black text-blue-500 uppercase tracking-widest">
+                      Enter Module <ChevronRight className="w-3 h-3" />
+                   </div>
+                 </button>
+               ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'portals' && (
+           <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-6">
+              <div className="px-2">
+                <h2 className="text-2xl font-black uppercase tracking-tighter text-white">Gov Portals</h2>
+                <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mt-1">Citizen Link Infrastructure</p>
+              </div>
+              {!publicUser && (
+                <div className="p-6 bg-amber-500/5 border border-amber-500/10 rounded-3xl flex items-center gap-4">
+                   <AlertCircle className="w-6 h-6 text-amber-500" />
+                   <p className="text-[10px] font-black uppercase text-amber-500 tracking-wider leading-relaxed">Identity verification recommended for portal use. <button onClick={() => setIsPublicAuthOpen(true)} className="underline">Join Portal</button></p>
                 </div>
-             </div>
-             
-             <p className="text-slate-700 text-[9px] font-black uppercase tracking-[0.5em] mt-8">© 2025 NATIONAL SECURITY TIER ENGINEERING</p>
-          </div>
-        </div>
-      </footer>
+              )}
+              <div className="grid grid-cols-1 gap-4">
+                 {GOV_FORMS.map(form => (
+                   <div key={form.id} className="glass-card p-8 rounded-[2.5rem] border-white/10">
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                           {getIcon(form.icon, "w-6 h-6")}
+                        </div>
+                        <div>
+                           <h3 className="text-sm font-black uppercase tracking-widest text-white">{form.title}</h3>
+                           <p className="text-[10px] text-slate-500 uppercase font-mono">{form.id.toUpperCase()}_v1.0</p>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => setSelectedForm(form)}
+                        className="w-full bg-white text-black py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-transform"
+                      >
+                        Initiate Application
+                      </button>
+                   </div>
+                 ))}
+              </div>
+           </div>
+        )}
 
+        {activeTab === 'ai' && (
+          <div className="h-full flex flex-col animate-in fade-in duration-500">
+             <div className="flex-1 overflow-hidden rounded-[3rem] border border-white/5 relative">
+                <AIChat embedded={true} />
+             </div>
+          </div>
+        )}
+
+        {activeTab === 'account' && (
+          <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-8">
+             <div className="px-2">
+                <h2 className="text-2xl font-black uppercase tracking-tighter text-white">Node Gateway</h2>
+                <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mt-1">Identity & Access Control</p>
+             </div>
+
+             {publicUser ? (
+               <div className="space-y-6">
+                  <div className="glass-card p-10 rounded-[3rem] border-white/10 flex flex-col items-center text-center gap-6">
+                     <div className="w-24 h-24 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center overflow-hidden">
+                        <User className="w-12 h-12 text-blue-500" />
+                     </div>
+                     <div className="space-y-1">
+                        <h3 className="text-xl font-black uppercase text-white tracking-tight">{publicUser.name}</h3>
+                        <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">{publicUser.email}</p>
+                     </div>
+                     <div className="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                        <span className="text-[8px] font-black uppercase text-emerald-500 tracking-widest">Verified_Identity</span>
+                     </div>
+                     <button 
+                        onClick={logoutPublic}
+                        className="mt-4 flex items-center gap-2 text-[10px] font-black uppercase text-red-500 tracking-[0.3em] hover:text-red-400 transition-colors"
+                     >
+                        <LogOut className="w-3 h-3" /> Terminate Link
+                     </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                     <div className="glass-card p-6 rounded-[2rem] border-white/10">
+                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Request Log</p>
+                        <p className="text-2xl font-black text-white">04</p>
+                     </div>
+                     <div className="glass-card p-6 rounded-[2rem] border-white/10">
+                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Trust Level</p>
+                        <p className="text-2xl font-black text-blue-500">Tier 1</p>
+                     </div>
+                  </div>
+               </div>
+             ) : (
+               <div className="space-y-6">
+                 <div className="glass-card p-10 rounded-[3rem] border-white/10 text-center space-y-8">
+                    <div className="w-20 h-20 bg-blue-500/10 border border-blue-500/20 rounded-full flex items-center justify-center mx-auto">
+                       <UserPlus className="w-8 h-8 text-blue-500" />
+                    </div>
+                    <div className="space-y-2">
+                       <p className="text-sm font-bold text-white uppercase tracking-widest">Citizen Portal Access</p>
+                       <p className="text-[10px] text-slate-500 uppercase leading-relaxed">Register with your real Gmail address to sync documents and project history.</p>
+                    </div>
+                    <button 
+                      onClick={() => setIsPublicAuthOpen(true)}
+                      className="w-full bg-white text-black py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl active:scale-95 transition-transform"
+                    >
+                       Create Account
+                    </button>
+                 </div>
+                 
+                 <div className="glass-card p-10 rounded-[3rem] border-white/10 text-center space-y-6 opacity-60">
+                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.5em]">System Operations</p>
+                    <button 
+                      onClick={openAdmin}
+                      className="w-full bg-blue-600/10 border border-blue-500/20 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-blue-500 active:scale-95 transition-transform"
+                    >
+                       {isLoggedIn ? 'Launch Admin Panel' : 'Admin Login'}
+                    </button>
+                 </div>
+               </div>
+             )}
+             
+             <div className="p-8 bg-white/2 rounded-[2.5rem] border border-white/5 flex flex-col items-center gap-4 text-center opacity-40">
+                <Logo className="w-8 h-8 text-slate-700" />
+                <p className="text-[8px] font-black text-slate-700 uppercase tracking-[0.5em]">SJL-OS Build_7834_STABLE</p>
+             </div>
+          </div>
+        )}
+
+      </main>
+
+      {/* Bottom Tab Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-[110] glass-card border-t border-white/10 backdrop-blur-3xl safe-bottom">
+        <div className="flex items-center justify-between px-6 py-4">
+          {[
+            { id: 'home', icon: Home, label: 'Hub' },
+            { id: 'services', icon: LayoutGrid, label: 'Core' },
+            { id: 'portals', icon: Zap, label: 'Gate' },
+            { id: 'ai', icon: Bot, label: 'Expert' },
+            { id: 'account', icon: User, label: publicUser ? 'Me' : 'Join' }
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button 
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as TabType)}
+                className="flex flex-col items-center gap-1.5 transition-all relative group"
+              >
+                {isActive && <div className="absolute top-[-20px] left-1/2 -translate-x-1/2 w-8 h-[2px] bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,1)]" />}
+                <div className={`p-1.5 rounded-lg transition-colors ${isActive ? 'text-blue-500' : 'text-slate-500 group-active:text-slate-300'}`}>
+                   <Icon className={`w-6 h-6 ${isActive ? 'scale-110' : ''} transition-transform`} />
+                </div>
+                <span className={`text-[8px] font-black uppercase tracking-[0.2em] transition-colors ${isActive ? 'text-blue-500' : 'text-slate-700'}`}>
+                   {tab.label}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </nav>
+
+      {/* Overlays */}
       {selectedForm && <FormAssistant form={selectedForm} onClose={() => setSelectedForm(null)} />}
       {isWifiModalOpen && <WifiTopupAssistant onClose={() => setIsWifiModalOpen(false)} />}
       {isGameModalOpen && <GameTopupAssistant onClose={() => setIsGameModalOpen(false)} />}
       {isUniModalOpen && <UniversityProjectAssistant onClose={() => setIsUniModalOpen(false)} />}
-      {isConsultOpen && <ConsultationModal onClose={() => setIsConsultOpen(false)} />}
-      {systemConfig.aiChat && <AIChat />}
+      
+      {isPublicAuthOpen && (
+        <PublicAuth 
+          onClose={() => setIsPublicAuthOpen(false)}
+          onSuccess={(userData) => {
+            setPublicUser(userData);
+            localStorage.setItem('sjl_public_user', JSON.stringify(userData));
+            setIsPublicAuthOpen(false);
+            setActiveTab('account');
+          }}
+        />
+      )}
 
       {isAdminLoginOpen && (
         <AdminLogin 
@@ -333,24 +448,6 @@ const App: React.FC = () => {
           setSystemConfig={setSystemConfig}
         />
       )}
-    </div>
-  );
-};
-
-const ConsultationModal = ({ onClose }: { onClose: () => void }) => {
-  return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={onClose} />
-      <div className="relative w-full max-w-lg glass-card rounded-[3rem] p-12 animate-in zoom-in duration-300">
-        <button onClick={onClose} className="absolute top-10 right-10 text-slate-500 hover:text-white"><X /></button>
-        <div className="flex items-center gap-4 mb-8">
-           <Terminal className="w-8 h-8 text-blue-500" />
-           <h3 className="font-heading text-2xl font-black uppercase">Initial Sync</h3>
-        </div>
-        <p className="text-slate-400 mb-8">Ready to initiate digital orchestration? Provide your node details.</p>
-        <input className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl mb-4 outline-none focus:border-blue-500" placeholder="Identity Handle" />
-        <button className="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase tracking-widest">Connect Node</button>
-      </div>
     </div>
   );
 };

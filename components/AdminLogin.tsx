@@ -30,8 +30,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onBack, onLoginSuccess }) => {
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Target Credentials
-  const TARGET_USER = "NJDEVELOPE";
+  // Target Credentials Updated per request
+  const TARGET_USER = "Nipeshsir2025";
   const TARGET_PASS = "9709596050";
 
   const handleLogin = (e: React.FormEvent) => {
@@ -50,7 +50,6 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onBack, onLoginSuccess }) => {
       } else {
         setIsLoading(false);
         setError("ACCESS_DENIED: INVALID_CREDENTIALS");
-        // Shake animation trigger could be added here
       }
     }, 1200);
   };

@@ -3,11 +3,16 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Sajilo Project Hub | Future-Proof Digital Infrastructure</title>
     
+    <!-- Mobile App Meta -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#03040a">
+    
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Sajilo Project Hub - The next-generation digital node for Nepal. Futuristic e-governance, ISP recharges, and enterprise engineering." />
+    <meta name="description" content="Sajilo Project Hub - The next-generation digital node for Nepal. Futuristic e-governance, ISP recharges, and university project engineering." />
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,7 +35,8 @@
         background-color: var(--bg);
         color: #ffffff;
         overflow-x: hidden;
-        scroll-behavior: smooth;
+        overscroll-behavior-y: none; /* Prevents pull-to-refresh on mobile apps */
+        -webkit-tap-highlight-color: transparent;
       }
 
       .font-heading { font-family: 'Space Grotesk', sans-serif; }
@@ -41,57 +47,28 @@
           linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
         background-size: 50px 50px;
         mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
-        animation: grid-flow 60s linear infinite;
-      }
-
-      @keyframes grid-flow {
-        from { background-position: 0 0; }
-        to { background-position: 500px 500px; }
-      }
-
-      .orb {
-        position: absolute;
-        width: 600px;
-        height: 600px;
-        background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-        filter: blur(80px);
-        z-index: -1;
-        pointer-events: none;
-      }
-
-      .scanline {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.1) 51%);
-        background-size: 100% 4px;
-        pointer-events: none;
-        z-index: 999;
-        opacity: 0.1;
       }
 
       .glass-card {
         background: var(--glass);
         backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
         border: 1px solid var(--glass-border);
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
-      .glass-card:hover {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: rgba(255, 255, 255, 0.2);
-        transform: translateY(-5px);
+      .safe-top { padding-top: env(safe-area-inset-top); }
+      .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+      /* Mobile App Shell Styles */
+      @media (max-width: 768px) {
+        .app-view {
+          height: 100vh;
+          overflow-y: auto;
+          padding-bottom: calc(80px + env(safe-area-inset-bottom));
+        }
       }
 
-      .glow-text {
-        text-shadow: 0 0 20px var(--accent-glow);
-      }
-
-      ::-webkit-scrollbar { width: 4px; }
-      ::-webkit-scrollbar-track { background: #03040a; }
-      ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
+      ::-webkit-scrollbar { width: 0px; } /* Hide scrollbars for app feel */
     </style>
   <script type="importmap">
 {
@@ -108,9 +85,7 @@
 </script>
 </head>
   <body>
-    <div class="scanline"></div>
     <div id="root"></div>
-    <!-- Vite entry point -->
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>

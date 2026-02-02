@@ -1,9 +1,10 @@
 
 import { GoogleGenAI } from "@google/genai";
 
+// Use standard flash model for general IT strategy consultation (basic text task)
 export const generateChatResponse = async (history: {role: string, parts: {text: string}[]}[], userMessage: string): Promise<string> => {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
     const chat = ai.chats.create({
       model: 'gemini-3-flash-preview',
@@ -42,26 +43,46 @@ export const generateChatResponse = async (history: {role: string, parts: {text:
   }
 };
 
-export const solveUniversityProject = async (university: string, faculty: string, description: string): Promise<string> => {
+// Use pro model for complex academic synthesis and reasoning tasks
+export const solveUniversityProject = async (
+  university: string, 
+  faculty: string, 
+  topic: string, 
+  description: string, 
+  subjects: string,
+  year: string,
+  semester: string
+): Promise<string> => {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
     const prompt = `Act as an expert Academic Advisor for ${university}, specifically the ${faculty} department. 
-    A student is working on the following project: "${description}".
+    
+    STUDENT CONTEXT:
+    - Year: ${year}
+    - Semester: ${semester}
+    
+    PROJECT INPUTS:
+    - Topic: ${topic}
+    - Description: ${description}
+    - Relevant Subjects: ${subjects}
     
     Your task is to provide a highly detailed "Project Synthesis Report" following the latest official format of ${university}.
     
-    The response must include:
-    1. SOLUTION STRATEGY: A high-level technical approach to the problem.
-    2. TECH STACK: Recommended localized and modern technologies (e.g., React, Node.js, Python, etc.) suitable for a Nepali student project.
-    3. PROJECT ROADMAP: A 4-phase timeline (Proposal, Design, Development, Testing/Reporting).
-    4. DOCUMENTATION OUTLINE: Specific headings and sub-headings required for the Final Report according to ${university}'s standard (e.g., Chapter 1: Introduction, Chapter 2: Literature Review, etc.).
-    5. LOGISTICS: Mention that Sajilo Project Hub can help in implementing this prototype.
+    CRITICAL FORMATTING RULES:
+    1. ABSOLUTE TOP: The very first line of the output MUST be "# PROJECT TOPIC: ${topic}". Do not put anything before this.
+    2. BODY SECTIONS: 
+       - ## SOLUTION STRATEGY: A high-level technical approach.
+       - ## TECH STACK: Recommended localized and modern technologies (React, Node.js, Python, etc.).
+       - ## PROJECT ROADMAP: A 4-phase timeline suitable for a student in their ${semester}.
+       - ## DOCUMENTATION OUTLINE: Specific headings (Chapter 1-5).
+    3. ABSOLUTE BOTTOM: The very last section MUST be "--- \n ### RELEVANT ACADEMIC SUBJECTS \n ${subjects}".
+    4. Mention that Sajilo Project Hub (domestic engineering firm) can help in implementing this prototype.
     
-    Format the output in a professional, clean, and structured manner. Use clear headings.`;
+    Format the output in a professional, clean, and structured academic memorandum style.`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3-pro-preview',
       contents: prompt,
     });
 
