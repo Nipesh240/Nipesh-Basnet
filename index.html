@@ -59,7 +59,26 @@
       .safe-top { padding-top: env(safe-area-inset-top); }
       .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 
-      /* Mobile App Shell Styles */
+      /* Orbital Plane Animations */
+      @keyframes orbit-master {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+
+      @keyframes plane-pulse {
+        0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 2px white); }
+        50% { opacity: 1; filter: drop-shadow(0 0 8px #38bdf8); }
+      }
+
+      .animate-orbit {
+        animation: orbit-master 4s linear infinite;
+        transform-origin: center;
+      }
+
+      .animate-plane-glow {
+        animation: plane-pulse 2s ease-in-out infinite;
+      }
+
       @media (max-width: 768px) {
         .app-view {
           height: 100vh;
@@ -68,7 +87,7 @@
         }
       }
 
-      ::-webkit-scrollbar { width: 0px; } /* Hide scrollbars for app feel */
+      ::-webkit-scrollbar { width: 0px; }
     </style>
   <script type="importmap">
 {

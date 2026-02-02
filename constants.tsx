@@ -23,21 +23,22 @@ import {
   Smartphone, 
   HardDrive,
   Gamepad2,
-  Trophy,
-  Sword,
-  Target,
+  Trophy, 
+  Sword, 
+  Target, 
   GraduationCap
 } from 'lucide-react';
 import { Service, Testimonial } from './types.ts';
 
 export const Logo = ({ className = "w-8 h-8" }: { className?: string }) => (
   <svg 
-    viewBox="0 0 100 100" 
+    viewBox="0 0 120 120" 
     className={className} 
     fill="none" 
     xmlns="http://www.w3.org/2000/svg"
   >
-    <g transform="translate(50, 50)">
+    {/* Central Logo Structure */}
+    <g transform="translate(60, 60)">
       {[0, 120, 240].map((rotation) => (
         <g key={rotation} transform={`rotate(${rotation})`}>
           <path
@@ -51,6 +52,29 @@ export const Logo = ({ className = "w-8 h-8" }: { className?: string }) => (
           />
         </g>
       ))}
+      
+      {/* Orbital Path (Visual Guide) */}
+      <circle cx="0" cy="0" r="48" stroke="white" strokeWidth="0.5" strokeOpacity="0.05" strokeDasharray="4 4" />
+
+      {/* Orbiting Plane Group */}
+      <g className="animate-orbit">
+        <g transform="translate(0, -48) rotate(90)" className="animate-plane-glow">
+          {/* Plane Body */}
+          <path
+            d="M0 -6 L-4 4 L-1 3 L0 6 L1 3 L4 4 Z"
+            fill="white"
+          />
+          {/* Wings */}
+          <path
+            d="M-5 0 L-1 1 L0 1 L1 1 L5 0 L0 -1 Z"
+            fill="white"
+            fillOpacity="0.8"
+          />
+          {/* Digital Aura Trail */}
+          <circle cx="0" cy="8" r="1.5" fill="#38bdf8" opacity="0.6" />
+          <circle cx="0" cy="12" r="1" fill="#38bdf8" opacity="0.3" />
+        </g>
+      </g>
     </g>
   </svg>
 );
