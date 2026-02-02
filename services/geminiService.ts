@@ -6,10 +6,11 @@ export const generateChatResponse = async (history: {role: string, parts: {text:
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
     
     const chat = ai.chats.create({
-      model: 'gemini-3-pro-preview',
+      model: 'gemini-3-flash-preview',
+      history: history,
       config: {
-        systemInstruction: `You are the Lead Domestic IT Strategist for Sajilo Project Hub. 
-        Sajilo Project Hub is the premier IT firm specializing in projects exclusively within Nepal.
+        systemInstruction: `You are the Lead Domestic IT Strategist for Sajilo Project. 
+        Sajilo Project is the premier IT firm specializing in projects exclusively within Nepal.
         
         CORE COMPETENCIES:
         - Custom Web Development: High-performance React/Next.js solutions for local connectivity.
@@ -24,13 +25,18 @@ export const generateChatResponse = async (history: {role: string, parts: {text:
         2. "Localized Support"
         3. "Ease of Use (Sajilo)"`,
       },
-      history: history,
     });
 
     const response = await chat.sendMessage({ message: userMessage });
-    return response.text || "Connection timeout. Please re-initiate your query.";
+    
+    if (!response || !response.text) {
+      throw new Error("Empty response from AI gateway");
+    }
+
+    return response.text;
   } catch (error) {
     console.error("Gemini API Error:", error);
-    return "Our gateway is currently busy. Please try again shortly.";
+    // Throw error to be handled by the UI component
+    throw error;
   }
 };

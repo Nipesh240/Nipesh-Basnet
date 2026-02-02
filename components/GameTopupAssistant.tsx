@@ -102,7 +102,7 @@ const GameTopupAssistant: React.FC<GameTopupAssistantProps> = ({ onClose }) => {
               <Gamepad2 className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-xl font-bold">Game Topup Hub</h3>
+              <h3 className="text-xl font-bold">Game Topup</h3>
               <p className="text-[10px] text-purple-400 uppercase font-bold tracking-widest mt-0.5">Direct National Topup Service</p>
             </div>
           </div>

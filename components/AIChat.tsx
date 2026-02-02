@@ -1,16 +1,17 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, Send, X, Bot, User, Loader2, Terminal, Zap, Activity, Cpu } from 'lucide-react';
+import { MessageSquare, Send, X, Bot, User, Loader2, Terminal, Zap, Activity, Cpu, AlertTriangle, RefreshCw } from 'lucide-react';
 import { ChatMessage } from '../types.ts';
 import { generateChatResponse } from '../services/geminiService.ts';
 
 const AIChat: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'model', content: "UPLINK ESTABLISHED: Sajilo Project Hub Strategic Core online. I am optimized for national digital orchestration. How shall we evolve your node today?" }
+    { role: 'model', content: "UPLINK ESTABLISHED: Sajilo Project Strategic Core online. I am optimized for national digital orchestration. How shall we evolve your node today?" }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -18,26 +19,36 @@ const AIChat: React.FC = () => {
     if (el) {
       el.scrollTop = el.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
     const userMsg = input.trim();
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
+    setErrorStatus(null);
+    
+    // Add user message to UI immediately
+    const currentMessages = [...messages];
+    setMessages([...currentMessages, { role: 'user', content: userMsg } as ChatMessage]);
     setIsLoading(true);
 
     try {
-      const history = messages.map(m => ({
+      // History should only contain previous messages
+      const history = currentMessages.map(m => ({
         role: m.role,
         parts: [{ text: m.content }]
       }));
 
       const aiResponse = await generateChatResponse(history, userMsg);
       setMessages(prev => [...prev, { role: 'model', content: aiResponse }]);
-    } catch (err) {
-      setMessages(prev => [...prev, { role: 'model', content: "CRITICAL_ERROR: Gateway congestion. Re-initialize uplink packet." }]);
+    } catch (err: any) {
+      console.error("Chat Error:", err);
+      setErrorStatus(err.message || "Uplink Failure");
+      setMessages(prev => [...prev, { 
+        role: 'model', 
+        content: "SECURITY_NOTICE: Communication channel disrupted. Please verify your network credentials and attempt a manual re-sync. Our core node is active, but your uplink packet was dropped." 
+      }]);
     } finally {
       setIsLoading(false);
     }
@@ -67,14 +78,14 @@ const AIChat: React.FC = () => {
                 <Bot className="relative w-6 h-6 text-blue-400" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500 whitespace-nowrap">SAJILO PROJECT HUB AI v4.0</span>
-                <span className="text-xs font-bold text-white tracking-widest">STRATEGIC COUNSEL</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500 whitespace-nowrap">SAJILO AI</span>
+                <span className="text-xs font-bold text-white tracking-widest uppercase">Strategic Counsel</span>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                <div className="w-1 h-1 rounded-full bg-emerald-500 animate-ping" />
-                <span className="text-[8px] font-black text-emerald-500 uppercase">Synced</span>
+                <div className={`w-1 h-1 rounded-full ${isLoading ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500 animate-ping'}`} />
+                <span className="text-[8px] font-black text-emerald-500 uppercase">{isLoading ? 'Processing' : 'Active'}</span>
               </div>
               <button onClick={() => setIsOpen(false)} className="text-slate-500 hover:text-white transition-colors">
                 <X className="w-5 h-5" />
@@ -103,11 +114,21 @@ const AIChat: React.FC = () => {
                 </div>
               </div>
             ))}
+            
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-white/5 border border-white/10 p-5 rounded-2xl flex items-center gap-4 animate-pulse">
-                  <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
-                  <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Processing...</span>
+                <div className="bg-white/5 border border-white/10 p-5 rounded-2xl flex items-center gap-4 animate-in fade-in">
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                  <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Awaiting Uplink...</span>
+                </div>
+              </div>
+            )}
+
+            {errorStatus && (
+              <div className="flex justify-center">
+                <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-center gap-3">
+                  <AlertTriangle className="w-4 h-4 text-red-500" />
+                  <span className="text-[9px] font-mono text-red-400 uppercase tracking-widest">Node Error: {errorStatus}</span>
                 </div>
               </div>
             )}
@@ -123,15 +144,16 @@ const AIChat: React.FC = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="INPUT COMMAND..."
+                placeholder="INPUT STRATEGIC COMMAND..."
                 className="flex-1 bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-4 text-xs font-mono tracking-widest text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-700"
+                disabled={isLoading}
               />
               <button 
                 onClick={handleSend}
-                disabled={isLoading}
-                className="bg-white text-black p-4 rounded-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-30"
+                disabled={isLoading || !input.trim()}
+                className="bg-white text-black p-4 rounded-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:scale-100"
               >
-                <Zap className="w-5 h-5" />
+                {isLoading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
               </button>
             </div>
           </div>

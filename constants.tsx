@@ -78,7 +78,7 @@ export const SERVICES: Service[] = [
   },
   {
     id: 'game-topup',
-    title: 'Game Topup Hub',
+    title: 'Game Topup Node',
     description: 'Fast and secure UC, Diamonds, and Credits for PUBG, Free Fire, and Mobile Legends.',
     icon: 'Gamepad2',
     color: 'purple'
@@ -162,7 +162,7 @@ export const TESTIMONIALS: Testimonial[] = [
     id: '1',
     name: 'Binaya Shrestha',
     role: 'IT Director, Municipal Governance',
-    text: "Sajilo Project Hub has been instrumental in digitizing our public service delivery. Their form fillup assistance has saved thousands of hours for our citizens.",
+    text: "Sajilo Project has been instrumental in digitizing our public service delivery. Their form fillup assistance has saved thousands of hours for our citizens.",
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150&h=150'
   },
   {

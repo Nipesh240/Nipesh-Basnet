@@ -191,7 +191,7 @@ const App: React.FC = () => {
             <Logo className="w-10 h-10 md:w-12 md:h-12 text-blue-500 group-hover:scale-110 transition-transform duration-500" />
             <div className="flex flex-col">
               <span className="font-heading font-black text-xl md:text-3xl tracking-tighter uppercase leading-tight text-white">
-                SAJILO <span className="text-blue-500">PROJECT HUB</span>
+                SAJILO <span className="text-blue-500">PROJECT</span>
               </span>
             </div>
           </div>
@@ -275,7 +275,7 @@ const App: React.FC = () => {
       <footer className="bg-[#010103] py-48 px-10 border-t border-white/5">
         <div className="max-w-7xl mx-auto flex flex-col items-center text-center">
           <Logo className="w-16 h-16 text-blue-500 mb-12" />
-          <h2 className="font-heading text-4xl font-black uppercase tracking-tighter mb-8">SAJILO <span className="text-blue-500">PROJECT HUB</span></h2>
+          <h2 className="font-heading text-4xl font-black uppercase tracking-tighter mb-8">SAJILO <span className="text-blue-500">PROJECT</span></h2>
           <div className="flex flex-col gap-8 items-center">
              <div className="flex gap-10 text-[10px] font-black text-slate-600 uppercase tracking-widest">
                <a href="#" className="hover:text-white transition-colors">Security</a>
