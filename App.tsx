@@ -48,7 +48,7 @@ import AIChat from './components/AIChat.tsx';
 import AdminLogin from './components/AdminLogin.tsx';
 import AdminDashboard from './components/AdminDashboard.tsx';
 import PublicAuth from './components/PublicAuth.tsx';
-import { UserActivity, SystemNotification } from './types.ts';
+import { UserActivity, SystemNotification, UserProfile } from './types.ts';
 
 type TabType = 'home' | 'services' | 'portals' | 'ai' | 'account';
 
@@ -67,18 +67,18 @@ const App: React.FC = () => {
   const [isAdminDashboardOpen, setIsAdminDashboardOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false); 
   
-  const [publicUser, setPublicUser] = useState<any>(() => {
+  const [publicUser, setPublicUser] = useState<UserProfile | null>(() => {
     const saved = localStorage.getItem('sjl_public_user');
     return saved ? JSON.parse(saved) : null;
   });
 
-  const [activities, setActivities] = useState<UserActivity[]>(() => {
-    const saved = localStorage.getItem('sjl_user_activities');
+  const [notifications, setNotifications] = useState<SystemNotification[]>(() => {
+    const saved = localStorage.getItem('sjl_notifications');
     return saved ? JSON.parse(saved) : [];
   });
 
-  const [notifications, setNotifications] = useState<SystemNotification[]>(() => {
-    const saved = localStorage.getItem('sjl_notifications');
+  const [activities, setActivities] = useState<UserActivity[]>(() => {
+    const saved = localStorage.getItem('sjl_user_activities');
     return saved ? JSON.parse(saved) : [];
   });
 
@@ -115,6 +115,21 @@ const App: React.FC = () => {
     }, 3500);
   }, []);
 
+  // Listen for broadcast events from Admin
+  useEffect(() => {
+    const handleBroadcast = (e: any) => {
+      if (e.detail) {
+        addNotification({
+          type: e.detail.type || 'info',
+          message: e.detail.message,
+          sender: 'Admin Node'
+        });
+      }
+    };
+    window.addEventListener('sjl_broadcast', handleBroadcast);
+    return () => window.removeEventListener('sjl_broadcast', handleBroadcast);
+  }, [addNotification]);
+
   const markNotifsRead = () => {
     setNotifications(prev => {
       const updated = prev.map(n => ({ ...n, read: true }));
@@ -134,16 +149,11 @@ const App: React.FC = () => {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
     
-    addNotification({
-      type: 'info',
-      message: 'Node synchronized. All services operational.'
-    });
-
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [addNotification]);
+  }, []);
 
   const addActivity = useCallback((activity: Omit<UserActivity, 'id' | 'timestamp'>) => {
     const newActivity: UserActivity = {
@@ -172,11 +182,7 @@ const App: React.FC = () => {
 
   const logoutPublic = () => {
     localStorage.removeItem('sjl_public_user');
-    localStorage.removeItem('sjl_user_activities');
-    localStorage.removeItem('sjl_notifications');
     setPublicUser(null);
-    setActivities([]);
-    setNotifications([]);
   };
 
   const getActivityIcon = (type: string) => {
@@ -207,14 +213,15 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#03040a] text-white flex flex-col font-sans selection:bg-blue-500/40">
       
-      {/* Reverted Toast System - Simple Blue Glass */}
+      {/* Toast System */}
       <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[300] w-[90%] max-w-sm pointer-events-none flex flex-col gap-2">
         {toasts.map((toast) => (
           <div key={toast.id} className="pointer-events-auto bg-blue-600/20 backdrop-blur-md rounded-2xl border border-white/10 p-4 shadow-xl animate-in slide-in-from-top-4 duration-300 flex items-center gap-4">
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-               toast.type === 'update' ? 'bg-blue-500/20 text-blue-400' : 'bg-emerald-500/20 text-emerald-400'
+               toast.type === 'update' ? 'bg-blue-500/20 text-blue-400' : 
+               toast.type === 'security' ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'
             }`}>
-              {toast.type === 'update' ? <Sparkles className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
+              {toast.type === 'update' ? <Sparkles className="w-4 h-4" /> : toast.type === 'security' ? <ShieldAlert className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
             </div>
             <p className="text-[11px] font-bold text-white">{toast.message}</p>
           </div>
@@ -247,7 +254,6 @@ const App: React.FC = () => {
                   )}
                 </button>
                 
-                {/* Reverted Notification Panel - Clean Blue Glass */}
                 {isNotifOpen && (
                   <>
                     <div className="fixed inset-0 z-[-1]" onClick={() => setIsNotifOpen(false)} />
@@ -269,15 +275,19 @@ const App: React.FC = () => {
                           notifications.map((n) => (
                             <div key={n.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 flex gap-3">
                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                                 n.type === 'update' ? 'bg-blue-500/20 text-blue-400' : 'bg-emerald-500/20 text-emerald-400'
+                                 n.type === 'update' ? 'bg-blue-500/20 text-blue-400' : 
+                                 n.type === 'security' ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'
                                }`}>
                                  <Info className="w-4 h-4" />
                                </div>
                                <div className="flex flex-col gap-1 flex-1">
+                                 <div className="flex justify-between items-center">
+                                   <span className="text-[7px] font-black uppercase text-blue-500/60">{n.sender || 'System'}</span>
+                                   <span className="text-[7px] font-mono text-slate-600 uppercase">
+                                     {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                   </span>
+                                 </div>
                                  <p className="text-[11px] font-medium text-slate-300 leading-tight">{n.message}</p>
-                                 <span className="text-[8px] font-mono text-slate-600 uppercase">
-                                   {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                 </span>
                                </div>
                             </div>
                           ))

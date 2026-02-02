@@ -29,10 +29,19 @@ export interface UserActivity {
   details: string;
 }
 
+export interface UserProfile {
+  name: string;
+  email: string;
+  verified: boolean;
+  tier: number;
+  joinedAt: string;
+}
+
 export interface SystemNotification {
   id: string;
   type: 'update' | 'security' | 'info';
   message: string;
   timestamp: string;
   read: boolean;
+  sender?: string;
 }
